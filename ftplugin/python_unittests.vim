@@ -1,0 +1,320 @@
+"
+" Python filetype plugin for unit testing (currently with nose)
+" Language:     Python (ft=python)
+" Maintainer:   Vincent Driessen <vincent@datafox.nl>
+" Version:      Vim 7 (may work with lower Vim versions, but not tested)
+" URL:          http://github.com/nvie/vim-pyunit
+"
+" Very inspired by Gary Bernhart's work:
+"     http://bitbucket.org/garybernhardt/dotfiles/src/tip/.vimrc
+"
+" Based on Mike Crute's Vim plugin:
+"     http://code.crute.org/mcrute_dotfiles/file/a19ddffcabe6/.vim/plugin/python_testing.vim
+"
+
+" Only do this when not done yet for this buffer
+" TODO: Use this!
+"if exists("b:loaded_python_unittests_ftplugin")
+"    finish
+"endif
+"let b:loaded_python_unittests_ftplugin = 1
+
+" Configuration for autodetecting project root {{{
+" Configure what files indicate a project root
+if !exists("g:projroot_indicators")
+    let g:projroot_indicators = [ ".git", ".lvimrc", "setup.py", "setup.cfg" ]
+endif
+
+" Scan from the current working directory up until the home dir, instead of
+" the filesystem root.  This has no effect on projects that reside outside the
+" user's home directory.  In those cases there will be scanned up until the
+" filesystem root directory.
+if !exists("g:projroot_stop_at_home_dir")
+    let g:projroot_stop_at_home_dir = 1
+endif
+" }}}
+" Configuration for tests organisation {{{
+" Prefix used for all path components of the test file
+if !exists("g:test_prefix")
+    " nosetests scans all files/directories starting with "test_", so this is
+    " a sane default value.  There should not be a need to change this.
+    let g:test_prefix = "test_"
+endif
+
+" Relative location from the project root (the project root is autodetected,
+" see g:projroot_indicators)
+if !exists("g:tests_location")
+    let g:tests_location = "tests"
+endif
+
+" Tests structure can be either flat or follow-hierarchy
+"let g:tests_structure = "flat"
+if !exists("g:tests_structure")
+    let g:tests_structure = "follow-hierarchy"
+endif
+" }}}
+
+python << endp
+import vim
+import sys
+import os
+import os.path
+from vim_bridge import bridged, __version__
+
+@bridged
+def _get_parent_path(path):
+    return os.path.dirname(path)
+
+def is_home_dir(path):
+    return os.path.realpath(path) == os.path.expandvars("$HOME")
+
+def is_fs_root(path):
+    return os.path.realpath(path) == "/" or \
+           (vim.eval("g:projroot_stop_at_home_dir") and is_home_dir(path))
+
+@bridged # {{{
+def find_project_root(path):
+    if not os.path.isdir(path):
+        return find_project_root(os.path.dirname(os.path.realpath(path)))
+
+    indicators = vim.eval("g:projroot_indicators")
+    while not is_fs_root(path):
+        for i in indicators:
+            if os.path.exists(os.path.join(path, i)):
+                return os.path.normpath(path)
+        path = os.path.join(path, os.path.pardir)
+    raise Exception("Could not find project root")
+    # }}}
+
+def _relpath(path, start='.'): # {{{
+    """Returns the relative version of the path.  This is a backport of
+    Python's stdlib routine os.path.relpath(), which is not yet available in
+    Python 2.4.
+
+    """
+    # Fall back onto stdlib version of it, if available
+    try:
+        return os.path.relpath(path, start)
+    except NameError:
+        # Python versions below 2.6 don't have the relpath function
+        # It's ok, we fall back onto our own implementation
+        pass
+
+    fullp = os.path.abspath(path)
+    fulls = os.path.abspath(start)
+    matchs = os.path.normpath(start) + os.sep
+    print fullp
+    print fulls
+
+    if fullp.startswith(matchs):
+        return fullp[len(matchs):]
+    else:
+        # Strip dirs off of fulls until it is a prefix of fullp
+        path_prefixes = []
+        while True:
+            path_prefixes.append(os.path.pardir)
+            fulls = os.path.dirname(fulls)
+            if fullp.startswith(fulls):
+                break
+        remainder = fullp[len(fulls):]
+        if remainder.startswith(os.sep):
+            remainder = remainder[len(os.sep):]
+        path_prefix = os.sep.join(path_prefixes)
+        return os.path.join(path_prefix, remainder)
+    # }}}
+
+@bridged # {{{
+def get_relative_path_in_project(path):
+    root = find_project_root(path)
+    return _relpath(path, root)
+    # }}}
+@bridged # {{{
+def get_tests_root(path):
+    loc = vim.eval("g:tests_location")
+    return os.sep.join([find_project_root(path), loc])
+    # }}}
+@bridged # {{{
+def add_test_prefix_to_all_path_components(path):
+    prefix = vim.eval("g:test_prefix")
+    components = path.split(os.sep)
+    return os.sep.join([s and prefix + s or s for s in components])
+    # }}}
+@bridged # {{{
+def get_test_file_for_file(path):
+    prefix = vim.eval("g:test_prefix")
+    testsroot = get_tests_root(path)
+
+    relpath = get_relative_path_in_project(path)
+    u_relpath = relpath.replace("/", "_")
+
+    if vim.eval("g:tests_structure") == "flat":
+        components = [testsroot, prefix + u_relpath]
+    else:
+        relpath = add_test_prefix_to_all_path_components(relpath)
+        components = [testsroot, relpath]
+
+    return os.sep.join(components)
+    # }}}
+
+@bridged # {{{
+def switch_to_test_file_for_file(path):
+    testfile = get_test_file_for_file(path)
+    testdir = os.path.dirname(testfile)
+    if not os.path.isfile(testfile):
+        # Create the directory up until the file (if it doesn't exist yet)
+        if not os.path.exists(testdir):
+            os.makedirs(testdir)
+
+    rel_testfile = _relpath(testfile, ".")
+
+    # Finally, open the buffer in a split window
+    if int(vim.eval('bufexists("%s")' % rel_testfile)):
+        command = 'vert rightb sbuffer %s' % rel_testfile
+    else:
+        command = 'vert rightb split %s' % rel_testfile
+    vim.command(command)
+    return ""  # bogus return value, since vim_bridge does not support
+               # functions without a return value currently
+    # }}}
+
+endp
+
+fun! GetTestFileForCurrentFile()
+    return GetTestFileForFile(@%)
+endf
+
+fun! SwitchToTestFileForCurrentFile()
+    call SwitchToTestFileForFile(@%)
+endf
+
+" DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG
+nmap <F9> :w<CR>:so %<CR>:call SwitchToTestFileForCurrentFile()<CR>
+nmap <F10> :w<CR>:so %<CR>:echo FindProjectRoot(@%)<CR>
+" DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG
+
+" Plugin configuration {{{
+" Set the pyunit_cmd to whatever is your testing tool (default: nosetests)
+if !exists("g:pyunit_cmd")
+    let g:pyunit_cmd = "nosetests -q --with-machineout"
+endif
+
+" Set show_tests to 1 if you want to show the tests (default: 0)
+if !exists("g:show_tests")       " TODO: Use this one!
+    let g:show_tests = 0
+endif
+"}}}
+
+let &grepformat = "%f:%l: fail: %m,%f:%l: error: %m"
+let &grepprg = g:pyunit_cmd
+
+" Unit Test Functions {{{
+fun! s:RedBar()
+    hi RedBar ctermfg=white ctermbg=red guibg=red
+    echohl RedBar
+    echon repeat(" ", &columns - 1)
+    echohl
+endfunction
+
+fun! s:GreenBar()
+    hi GreenBar ctermfg=white ctermbg=green guibg=green
+    echohl GreenBar
+    echon repeat(" ", &columns - 1)
+    echohl
+endfunction
+" }}}
+
+" {{{ Testing Support 
+
+fun! ClassToFilename(class_name)
+    let understored_class_name = substitute(a:class_name, '\(.\)\(\u\)', '\1_\U\2', 'g')
+    let file_name = substitute(understored_class_name, '\(\u\)', '\L\1', 'g')
+    return 'test_' . file_name . '.py'
+endfunction
+
+fun! NameOfCurrentClass()
+    let save_cursor = getpos(".")
+    normal $<cr>
+    call PythonDec('class', -1)
+    let line = getline('.')
+    call setpos('.', save_cursor)
+    let match_result = matchlist(line, ' *class \+\(\w\+\)')
+    return match_result[1]
+endfunction
+
+fun! TestFileForCurrentClass()
+    let class_name = NameOfCurrentClass()
+    let test_file_name = ModuleTestPath() . '/' . ClassToFilename(class_name)
+    return test_file_name
+endfunction
+
+fun! RunTests(target, args)
+    silent ! echo
+    exec 'silent ! echo -e "\033[1;36mRunning tests in ' . a:target . '\033[0m"'
+    set grepprg=nosetests
+    silent w
+    exec "grep! " . a:target . " " . a:args
+endfunction
+
+fun! RunTestsForFile(args)
+    if @% =~ 'test_'
+        call RunTests('%', a:args)
+    else
+        let test_file_name = TestFileForCurrentFile()
+        call RunTests(test_file_name, a:args)
+    endif
+endfunction
+
+fun! RunAllTests(args)
+    silent ! echo
+    silent ! echo -e "\033[1;36mRunning all unit tests\033[0m"
+    set grepprg=nosetests
+    silent w
+    exec "grep! tests.unit " . a:args
+endfunction
+
+fun! JumpToError()
+    if getqflist() != []
+        for error in getqflist()
+            if error['valid']
+                break
+            endif
+        endfor
+        let error_message = substitute(error['text'], '^ *', '', 'g')
+        " silent cc!
+        let error_buffer = error['bufnr']
+        if g:show_tests == 1
+            exec ":vs"
+            exec ":buffer " . error_buffer
+        endif
+        exec "normal ".error['lnum']."G"
+        call s:RedBar()
+        echo error_message
+    else
+        call s:GreenBar()
+        echo "All tests passed"
+    endif
+endfunction
+
+fun! JumpToTestsForClass()
+    exec 'e ' . TestFileForCurrentClass()
+endfunction
+" }}}
+
+" Keyboard mappings {{{
+nnoremap <leader>m :call RunTestsForFile('-q --with-machineout')<cr>:redraw<cr>:call JumpToError()<cr>
+nnoremap <leader>M :call RunTestsForFile('')<cr>
+nnoremap <leader>a :call RunAllTests('-q --with-machineout')<cr>:redraw<cr>:call JumpToError()<cr>
+nnoremap <leader>A :call RunAllTests('')<cr>
+nnoremap <leader>t :call JumpToTestsForClass()<cr>
+nnoremap <leader><leader> <c-^>
+" }}}
+
+" Add mappings, unless the user didn't want this.
+" The default mapping is registered under to <F8> by default, unless the user
+" remapped it already (or a mapping exists already for <F8>)
+if !exists("no_plugin_maps") && !exists("no_pep8_maps")
+    if !hasmapto('Pep8()')
+        noremap <buffer> <F6> :call RunTestsForFile()<CR>
+        noremap! <buffer> <F6> :call PyUnit()<CR>
+    endif
+endif
