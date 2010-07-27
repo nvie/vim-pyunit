@@ -1,0 +1,17 @@
+Installation
+------------
+1. Install [nose](http://pypi.python.org/pypi/nose) and
+   [nose_machineout](http://pypi.python.org/pypi/nose_machineout).  The
+   `machineout` plugin formats the `nose` output so that Vim can parse it more
+   easily.
+2. Copy the file `ftplugin/python_nose.vim` to your `~/.vim/ftplugin` directory
+
+
+Usage
+-----
+1. Open a Python file (or its corresponding unit test file named
+   `test_<filename>.py`)
+2. Press `<F8>` to run `nosetests` on it
+
+It shows the errors inside a quickfix window, which will allow your to quickly
+jump to the error locations by simply pressing [Enter].
