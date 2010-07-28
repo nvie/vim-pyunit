@@ -54,24 +54,20 @@ if !exists("g:tests_structure")
 endif
 " }}}
 
-python << endp
+python << endpython
 import vim
 import sys
 import os
 import os.path
 from vim_bridge import bridged, __version__
 
-@bridged
-def _get_parent_path(path):
-    return os.path.dirname(path)
-
-def is_home_dir(path):
+def is_home_dir(path): # {{{
     return os.path.realpath(path) == os.path.expandvars("$HOME")
-
-def is_fs_root(path):
+    # }}}
+def is_fs_root(path): # {{{
     return os.path.realpath(path) == "/" or \
            (vim.eval("g:projroot_stop_at_home_dir") and is_home_dir(path))
-
+    # }}}
 @bridged # {{{
 def find_project_root(path):
     if not os.path.isdir(path):
@@ -157,7 +153,24 @@ def get_test_file_for_file(path):
     # }}}
 
 @bridged # {{{
-def switch_to_test_file_for_file(path):
+def is_test_file(path):
+    testroot = os.path.abspath(get_tests_root(path))
+    path = os.path.abspath(path)
+    return path.startswith(testroot)
+    # }}}
+
+def _open_buffer(path, splitopts): # {{{
+    path = _relpath(path, ".")
+    if int(vim.eval('bufexists("%s")' % path)):
+        splitcmd = 'sbuffer'
+    else:
+        splitcmd = 'split'
+    command = "%s %s %s" % (splitopts, splitcmd, path)
+    vim.command(command)
+    # }}}
+
+@bridged # {{{
+def switch_to_test_file_for_source_file(path):
     testfile = get_test_file_for_file(path)
     testdir = os.path.dirname(testfile)
     if not os.path.isfile(testfile):
@@ -165,32 +178,40 @@ def switch_to_test_file_for_file(path):
         if not os.path.exists(testdir):
             os.makedirs(testdir)
 
-    rel_testfile = _relpath(testfile, ".")
-
-    # Finally, open the buffer in a split window
-    if int(vim.eval('bufexists("%s")' % rel_testfile)):
-        command = 'vert rightb sbuffer %s' % rel_testfile
-    else:
-        command = 'vert rightb split %s' % rel_testfile
-    vim.command(command)
-    return ""  # bogus return value, since vim_bridge does not support
-               # functions without a return value currently
+    _open_buffer(testfile, 'vert rightb')
     # }}}
 
-endp
+def strip_prefix(s, prefix): # {{{
+    if s.startswith(prefix):
+        return s[len(prefix):]
+    else:
+        return s
+    # }}}
 
-fun! GetTestFileForCurrentFile()
-    return GetTestFileForFile(@%)
+@bridged # {{{
+def switch_to_source_file_for_test_file(path):
+    testsroot = get_tests_root(path)
+    test_prefix = vim.eval("g:test_prefix")
+
+    rel_path = _relpath(path, testsroot)
+    parts = rel_path.split(os.sep)
+    parts = [strip_prefix(p, test_prefix) for p in parts]
+    sourcefile = os.sep.join(parts)
+
+    _open_buffer(sourcefile, 'vert lefta')
+    # }}}
+
+endpython
+
+fun! SwitchToAlternateFileForCurrentFile()
+    if IsTestFile(@%)
+        call SwitchToSourceFileForTestFile(@%)
+    else
+        call SwitchToTestFileForSourceFile(@%)
+    endif
 endf
 
-fun! SwitchToTestFileForCurrentFile()
-    call SwitchToTestFileForFile(@%)
-endf
-
-" DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG
-nmap <F9> :w<CR>:so %<CR>:call SwitchToTestFileForCurrentFile()<CR>
-nmap <F10> :w<CR>:so %<CR>:echo FindProjectRoot(@%)<CR>
-" DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG DEBUG
+nmap <F9> :call SwitchToAlternateFileForCurrentFile()<CR>
 
 " Plugin configuration {{{
 " Set the pyunit_cmd to whatever is your testing tool (default: nosetests)
