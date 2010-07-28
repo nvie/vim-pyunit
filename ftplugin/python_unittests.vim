@@ -300,14 +300,14 @@ fun! s:RedBar()
     echohl RedBar
     echon repeat(" ", &columns - 1)
     echohl
-endfunction
+endf
 
 fun! s:GreenBar()
     hi GreenBar ctermfg=white ctermbg=green guibg=green
     echohl GreenBar
     echon repeat(" ", &columns - 1)
     echohl
-endfunction
+endf
 " }}}
 
 " {{{ Testing Support 
@@ -316,7 +316,7 @@ fun! ClassToFilename(class_name)
     let understored_class_name = substitute(a:class_name, '\(.\)\(\u\)', '\1_\U\2', 'g')
     let file_name = substitute(understored_class_name, '\(\u\)', '\L\1', 'g')
     return 'test_' . file_name . '.py'
-endfunction
+endf
 
 fun! NameOfCurrentClass()
     let save_cursor = getpos(".")
@@ -326,13 +326,13 @@ fun! NameOfCurrentClass()
     call setpos('.', save_cursor)
     let match_result = matchlist(line, ' *class \+\(\w\+\)')
     return match_result[1]
-endfunction
+endf
 
 fun! TestFileForCurrentClass()
     let class_name = NameOfCurrentClass()
     let test_file_name = ModuleTestPath() . '/' . ClassToFilename(class_name)
     return test_file_name
-endfunction
+endf
 
 fun! RunTests(target, args)
     silent ! echo
@@ -340,7 +340,7 @@ fun! RunTests(target, args)
     set grepprg=nosetests
     silent w
     exec "grep! " . a:target . " " . a:args
-endfunction
+endf
 
 fun! RunTestsForFile(args)
     if @% =~ 'test_'
@@ -349,7 +349,7 @@ fun! RunTestsForFile(args)
         let test_file_name = TestFileForCurrentFile()
         call RunTests(test_file_name, a:args)
     endif
-endfunction
+endf
 
 fun! RunAllTests(args)
     silent ! echo
@@ -357,7 +357,7 @@ fun! RunAllTests(args)
     set grepprg=nosetests
     silent w
     exec "grep! tests.unit " . a:args
-endfunction
+endf
 
 fun! JumpToError()
     if getqflist() != []
@@ -380,11 +380,11 @@ fun! JumpToError()
         call s:GreenBar()
         echo "All tests passed"
     endif
-endfunction
+endf
 
 fun! JumpToTestsForClass()
     exec 'e ' . TestFileForCurrentClass()
-endfunction
+endf
 " }}}
 
 " Keyboard mappings {{{
