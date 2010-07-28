@@ -13,11 +13,10 @@
 "
 
 " Only do this when not done yet for this buffer
-" TODO: Use this!
-"if exists("b:loaded_python_unittests_ftplugin")
-"    finish
-"endif
-"let b:loaded_python_unittests_ftplugin = 1
+if exists("g:loaded_python_unittests_ftplugin")
+    finish
+endif
+let g:loaded_python_unittests_ftplugin = 1
 
 " Configuration for autodetecting project root {{{
 " Configure what files indicate a project root
