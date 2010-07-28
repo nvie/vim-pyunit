@@ -82,8 +82,14 @@ def find_project_root(path):
     # }}}
 
 def _strip_prefix(s, prefix): # {{{
-    if s.startswith(prefix):
+    if prefix != "" and s.startswith(prefix):
         return s[len(prefix):]
+    else:
+        return s
+    # }}}
+def _strip_suffix(s, suffix, replace_by = ''): # {{{
+    if suffix != "" and s.endswith(suffix):
+        return s[:-len(suffix)] + replace_by
     else:
         return s
     # }}}
@@ -146,6 +152,7 @@ def get_test_file_for_file(path):
     testsroot = get_tests_root(path)
 
     relpath = get_relative_path_in_project(path)
+    relpath = _strip_suffix(relpath, os.sep + '__init__.py', '.py')
     u_relpath = relpath.replace("/", "_")
 
     if vim.eval("g:tests_structure") == "flat":
@@ -192,7 +199,7 @@ def switch_to_source_file_for_test_file(path):
     rel_path = _relpath(path, testsroot)
     parts = rel_path.split(os.sep)
     parts = [_strip_prefix(p, test_prefix) for p in parts]
-    stripped = os.sep.join(parts)
+    sourcefile = os.sep.join(parts)
 
     if vim.eval("g:tests_structure") == "flat":
         # A flat test structure makes it somewhat ambiguous to deduce the test
@@ -206,14 +213,14 @@ def switch_to_source_file_for_test_file(path):
         #
         # The solution is to try them all and if we find a match, we use that
         # file.  In case of multiple matches, we simply use the first.
-        def slashgenerator(length):
+        def slashgenerator(length, select_from, select_last_from):
             if length <= 0:
-                yield []
+                for opt in select_last_from:
+                    yield [opt]
             else:
-                for x in slashgenerator(length - 1):
-                    yield ['/'] + x
-                for x in slashgenerator(length - 1):
-                    yield ['_'] + x
+                for opt in select_from:
+                    for x in slashgenerator(length - 1, select_from, select_last_from):
+                        yield [opt] + x
 
         def interlace(x, y):
             max_ = max(len(x), len(y))
@@ -223,18 +230,32 @@ def switch_to_source_file_for_test_file(path):
                 if i < len(y):
                     yield y[i]
 
-        parts = stripped.split("_")
+        stripped, extension = os.path.splitext(sourcefile)
         sourcefile = None
-        for slashes in slashgenerator(len(parts)-1):
+        parts = stripped.split("_")
+
+        intermediate_pairs = ['/','_']
+        last_pair = [extension, '/__init__' + extension]
+        print intermediate_pairs, last_pair
+        for slashes in slashgenerator(len(parts)-1, intermediate_pairs, last_pair):
             guess = "".join(interlace(parts, slashes))
             if os.path.isfile(guess):
                 sourcefile = guess
                 break
 
-    if sourcefile:
-        _open_buffer(sourcefile, 'vert lefta')
+        if not sourcefile:
+            raise Exception("Source file not found.")
     else:
-        raise Exception("Source file not found.")
+        # For non-flat tests structures, the source file can either be the
+        # source file as is (most likely), or an __init__.py file.  Try that
+        # alternative if the regular sourcefile doesn't exist.
+        if not os.path.isfile(sourcefile):
+            filepath, extension = os.path.splitext(sourcefile)
+            sourcefile = "".join([filepath, os.sep, "__init__", extension])
+            if not os.path.isfile(sourcefile):
+                raise Exception("Source file not found.")
+
+    _open_buffer(sourcefile, 'vert lefta')
     # }}}
 
 endpython
