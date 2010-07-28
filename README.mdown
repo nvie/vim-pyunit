@@ -1,9 +1,14 @@
 Installation
 ------------
-1. Install [nose](http://pypi.python.org/pypi/nose) and
-   [nose_machineout](http://pypi.python.org/pypi/nose_machineout).  The
-   `machineout` plugin formats the `nose` output so that Vim can parse it more
-   easily.
+1. Install the following packages from PyPI:
+
+   - [nose](http://pypi.python.org/pypi/nose): the unit test runner;
+   - [nose_machineout](http://pypi.python.org/pypi/nose_machineout):  The
+     `machineout` plugin formats the `nose` output so that Vim can parse it
+     more easily;
+   - [vim_bridge](http://pypi.python.org/pypi/vim_bridge):  This is required
+     for the vim plugin scripts, to call directly into Python functions.
+
 2. Copy the file `ftplugin/python_nose.vim` to your `~/.vim/ftplugin` directory
 
 
