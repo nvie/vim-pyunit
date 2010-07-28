@@ -63,10 +63,12 @@ from vim_bridge import bridged, __version__
 def is_home_dir(path): # {{{
     return os.path.realpath(path) == os.path.expandvars("$HOME")
     # }}}
+
 def is_fs_root(path): # {{{
     return os.path.realpath(path) == "/" or \
            (vim.eval("g:projroot_stop_at_home_dir") and is_home_dir(path))
     # }}}
+
 @bridged # {{{
 def find_project_root(path):
     if not os.path.isdir(path):
@@ -87,12 +89,14 @@ def _strip_prefix(s, prefix): # {{{
     else:
         return s
     # }}}
+
 def _strip_suffix(s, suffix, replace_by = ''): # {{{
     if suffix != "" and s.endswith(suffix):
         return s[:-len(suffix)] + replace_by
     else:
         return s
     # }}}
+
 def _relpath(path, start='.'): # {{{
     """Returns the relative version of the path.  This is a backport of
     Python's stdlib routine os.path.relpath(), which is not yet available in
@@ -135,17 +139,20 @@ def get_relative_path_in_project(path):
     root = find_project_root(path)
     return _relpath(path, root)
     # }}}
+
 @bridged # {{{
 def get_tests_root(path):
     loc = vim.eval("g:tests_location")
     return os.sep.join([find_project_root(path), loc])
     # }}}
+
 @bridged # {{{
 def add_test_prefix_to_all_path_components(path):
     prefix = vim.eval("g:test_prefix")
     components = path.split(os.sep)
     return os.sep.join([s and prefix + s or s for s in components])
     # }}}
+
 @bridged # {{{
 def get_test_file_for_file(path):
     prefix = vim.eval("g:test_prefix")
@@ -180,6 +187,7 @@ def _open_buffer(path, splitopts): # {{{
     command = "%s %s %s" % (splitopts, splitcmd, path)
     vim.command(command)
     # }}}
+
 @bridged # {{{
 def switch_to_test_file_for_source_file(path):
     testfile = get_test_file_for_file(path)
@@ -191,6 +199,7 @@ def switch_to_test_file_for_source_file(path):
 
     _open_buffer(testfile, 'vert rightb')
     # }}}
+
 @bridged # {{{
 def switch_to_source_file_for_test_file(path):
     testsroot = get_tests_root(path)
