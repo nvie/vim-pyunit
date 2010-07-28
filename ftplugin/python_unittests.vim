@@ -58,7 +58,7 @@ import vim
 import sys
 import os
 import os.path
-from vim_bridge import bridged, __version__
+from vim_bridge import bridged
 
 def is_home_dir(path): # {{{
     return os.path.realpath(path) == os.path.expandvars("$HOME")
