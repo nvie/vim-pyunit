@@ -103,17 +103,17 @@ class TestSomething(unittest.TestCase):
 
     def test_open_buffer_cmd(self):  # {{{
         vimvar['bufexists("foo")'] = '1'
-        self.assertTrue(mod._open_buffer_cmd('foo'),
+        self.assertEquals(mod._open_buffer_cmd('foo'),
                 'vert rightb sbuffer foo')
-        self.assertTrue(mod._open_buffer_cmd('foo', opposite=True),
+        self.assertEquals(mod._open_buffer_cmd('foo', opposite=True),
                 'vert lefta sbuffer foo')
 
         vimvar['bufexists("foo")'] = '0'
-        self.assertTrue(mod._open_buffer_cmd('foo'),
+        self.assertEquals(mod._open_buffer_cmd('foo'),
                 'vert rightb split foo')
 
         vimvar['g:tests_split_window'] = 'no'
-        self.assertTrue(mod._open_buffer_cmd('foo'),
+        self.assertEquals(mod._open_buffer_cmd('foo'),
                 'edit foo')
         # }}}
 
