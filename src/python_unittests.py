@@ -231,7 +231,7 @@ def _vim_splitcmd(inverted=False):  # {{{
     # }}}
 
 
-def _open_buffer(path, is_testfile=True):  # {{{
+def _open_buffer_cmd(path, is_testfile=True):  # {{{
     path = _relpath(path, ".")
     splitopts = _vim_splitcmd(is_testfile)
     if not splitopts:
@@ -241,7 +241,7 @@ def _open_buffer(path, is_testfile=True):  # {{{
     else:
         splitcmd = splitopts + ' split'
     command = "%s %s" % (splitcmd, path)
-    vim.command(command)
+    return command
     # }}}
 
 
@@ -253,13 +253,13 @@ def switch_to_test_file_for_source_file(path):  # {{{
         if not os.path.exists(testdir):
             os.makedirs(testdir)
 
-    _open_buffer(testfile)
+    vim.command(_open_buffer_cmd(testfile))
     # }}}
 
 
 def switch_to_source_file_for_test_file(path):  # {{{
     sourcefile = find_source_file_for_test_file(path)
-    _open_buffer(sourcefile, is_testfile=False)
+    vim.command(_open_buffer_cmd(sourcefile, is_testfile=False))
     # }}}
 
 
