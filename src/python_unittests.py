@@ -218,7 +218,7 @@ def is_test_file(path):  # {{{
     # }}}
 
 
-def _vim_splitcmd(inverted=False):  # {{{
+def _vim_split_cmd(inverted=False):  # {{{
     invert = {'top': 'bottom', 'left': 'right',
               'right': 'left', 'bottom': 'top', 'no': 'no'}
     mapping = {'top': 'lefta', 'left': 'vert lefta',
@@ -233,7 +233,7 @@ def _vim_splitcmd(inverted=False):  # {{{
 
 def _open_buffer_cmd(path, is_testfile=True):  # {{{
     path = _relpath(path, ".")
-    splitopts = _vim_splitcmd(is_testfile)
+    splitopts = _vim_split_cmd(is_testfile)
     if not splitopts:
         splitcmd = 'edit'
     elif int(vim.eval('bufexists("%s")' % path)):

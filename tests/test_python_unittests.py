@@ -85,20 +85,20 @@ class TestSomething(unittest.TestCase):
         # }}}
 
     def test_vim_splitcmd(self):  # {{{
-        self.assertEquals(mod._vim_splitcmd(), 'vert rightb')
-        self.assertEquals(mod._vim_splitcmd(True), 'vert lefta')
+        self.assertEquals(mod._vim_split_cmd(), 'vert rightb')
+        self.assertEquals(mod._vim_split_cmd(True), 'vert lefta')
 
         vimvar['g:tests_split_window'] = 'left'
-        self.assertEquals(mod._vim_splitcmd(), 'vert lefta')
-        self.assertEquals(mod._vim_splitcmd(True), 'vert rightb')
+        self.assertEquals(mod._vim_split_cmd(), 'vert lefta')
+        self.assertEquals(mod._vim_split_cmd(True), 'vert rightb')
 
         vimvar['g:tests_split_window'] = 'top'
-        self.assertEquals(mod._vim_splitcmd(), 'lefta')
-        self.assertEquals(mod._vim_splitcmd(True), 'rightb')
+        self.assertEquals(mod._vim_split_cmd(), 'lefta')
+        self.assertEquals(mod._vim_split_cmd(True), 'rightb')
 
         vimvar['g:tests_split_window'] = 'bottom'
-        self.assertEquals(mod._vim_splitcmd(True), 'lefta')
-        self.assertEquals(mod._vim_splitcmd(), 'rightb')
+        self.assertEquals(mod._vim_split_cmd(True), 'lefta')
+        self.assertEquals(mod._vim_split_cmd(), 'rightb')
         # }}}
 
     def test_open_buffer(self):  # {{{
