@@ -11,12 +11,11 @@ def is_home_dir(path):  # {{{
 
 def is_fs_root(path):  # {{{
     return os.path.realpath(path) == "/" or \
-           (vim.eval("g:projroot_stop_at_home_dir") and is_home_dir(path))
+           (int(vim.eval("g:projroot_stop_at_home_dir")) and is_home_dir(path))
     # }}}
 
 
-@bridged  # {{{
-def find_project_root(path):
+def find_project_root(path):  # {{{
     if not os.path.isdir(path):
         return find_project_root(os.path.dirname(os.path.realpath(path)))
 
@@ -27,6 +26,12 @@ def find_project_root(path):
                 return os.path.normpath(path)
         path = os.path.join(path, os.path.pardir)
     raise Exception("Could not find project root")
+    # }}}
+
+
+def find_source_root(path):  # {{{
+    source_root = vim.eval("g:source_root")
+    return os.path.join(find_project_root(path), source_root)
     # }}}
 
 
@@ -84,33 +89,29 @@ def _relpath(path, start='.'):  # {{{
     # }}}
 
 
-@bridged  # {{{
-def get_relative_path_in_project(path):
-    root = find_project_root(path)
+def get_relative_source_path(path):  # {{{
+    root = find_source_root(path)
     return _relpath(path, root)
     # }}}
 
 
-@bridged  # {{{
-def get_tests_root(path):
-    loc = vim.eval("g:tests_location")
+def get_tests_root(path):  # {{{
+    loc = vim.eval("g:tests_root")
     return os.sep.join([find_project_root(path), loc])
     # }}}
 
 
-@bridged  # {{{
-def add_test_prefix_to_all_path_components(path):
+def add_test_prefix_to_all_path_components(path):  # {{{
     prefix = vim.eval("g:test_prefix")
     components = path.split(os.sep)
     return os.sep.join([s and prefix + s or s for s in components])
     # }}}
 
 
-@bridged  # {{{
-def get_test_file_for_source_file(path):
+def get_test_file_for_source_file(path):  # {{{
     prefix = vim.eval("g:test_prefix")
 
-    relpath = get_relative_path_in_project(path)
+    relpath = get_relative_source_path(path)
     relpath = _strip_suffix(relpath, os.sep + '__init__.py', '.py')
 
     tests_structure = vim.eval("g:tests_structure")
@@ -128,8 +129,7 @@ def get_test_file_for_source_file(path):
     # }}}
 
 
-@bridged  # {{{
-def find_source_file_for_test_file(path):
+def find_source_file_for_test_file(path):  # {{{
     testsroot = get_tests_root(path)
     test_prefix = vim.eval("g:test_prefix")
 
@@ -138,6 +138,7 @@ def find_source_file_for_test_file(path):
     parts = [_strip_prefix(p, test_prefix) for p in parts]
     sourcefile = os.sep.join(parts)
 
+    src_root = find_source_root(path)
     tests_structure = vim.eval("g:tests_structure")
     if tests_structure == "flat":
         # A flat test structure makes it somewhat ambiguous to deduce the test
@@ -179,7 +180,7 @@ def find_source_file_for_test_file(path):
         print intermediate_pairs, last_pair
         for slashes in slashgenerator(len(parts) - 1, intermediate_pairs, \
                                last_pair):
-            guess = "".join(interlace(parts, slashes))
+            guess = os.path.join(src_root, "".join(interlace(parts, slashes)))
             if os.path.isfile(guess):
                 sourcefile = guess
                 break
@@ -190,6 +191,7 @@ def find_source_file_for_test_file(path):
         # For non-flat tests structures, the source file can either be the
         # source file as is (most likely), or an __init__.py file.  Try that
         # alternative if the regular sourcefile doesn't exist.
+        sourcefile = os.path.join(src_root, sourcefile)
         if not os.path.isfile(sourcefile):
             filepath, extension = os.path.splitext(sourcefile)
             sourcefile = "".join([filepath, os.sep, "__init__", extension])
@@ -200,11 +202,19 @@ def find_source_file_for_test_file(path):
     # }}}
 
 
-@bridged  # {{{
-def is_test_file(path):
-    testroot = os.path.abspath(get_tests_root(path))
-    path = os.path.abspath(path)
-    return path.startswith(testroot)
+def is_test_file(path):  # {{{
+    if vim.eval('g:tests_structure') == 'side-by-side':
+        # For side-by-side, test files need only to start with the
+        # prefix, their location is unimportant
+        prefix = vim.eval('g:test_prefix')
+        _, filename = os.path.split(path)
+        return filename.startswith(prefix)
+    else:
+        # For non-side-by-side tests, being in the test root means
+        # you're a test file
+        testroot = os.path.abspath(get_tests_root(path))
+        path = os.path.abspath(path)
+        return path.startswith(testroot)
     # }}}
 
 
@@ -235,8 +245,7 @@ def _open_buffer(path, is_testfile=True):  # {{{
     # }}}
 
 
-@bridged  # {{{
-def switch_to_test_file_for_source_file(path):
+def switch_to_test_file_for_source_file(path):  # {{{
     testfile = get_test_file_for_source_file(path)
     testdir = os.path.dirname(testfile)
     if not os.path.isfile(testfile):
@@ -248,11 +257,18 @@ def switch_to_test_file_for_source_file(path):
     # }}}
 
 
-@bridged  # {{{
-def switch_to_source_file_for_test_file(path):
+def switch_to_source_file_for_test_file(path):  # {{{
     sourcefile = find_source_file_for_test_file(path)
     _open_buffer(sourcefile, is_testfile=False)
     # }}}
+
+
+@bridged
+def switch_to_alternate_file_for_file(path):
+    if is_test_file(path):
+        switch_to_source_file_for_test_file(path)
+    else:
+        switch_to_test_file_for_source_file(path)
 
 
 @bridged  # {{{

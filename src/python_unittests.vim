@@ -54,10 +54,41 @@ if !exists("g:test_prefix")
     let test_prefix = "test_"
 endif
 
-" Relative location from the project root (the project root is autodetected,
-" see g:projroot_indicators)
-if !exists("g:tests_location")
-    let tests_location = "tests"
+" Location where the source files live.  When set, this must be the relative
+" directory under the project root.  For example, if you have your project
+" root as follows:
+" - foo/
+" - bar/
+" - tests/
+"
+" And you want the test structure:
+" - tests/test_foo/
+" - tests/test_bar/
+"
+" Then you can leave this at the default value ("").
+"
+" But if you have:
+" - src/
+"   - foo/
+"   - bar/
+" - tests/
+"
+" And you DON'T want:
+" - tests/test_src/test_foo/
+" - tests/test_src/test_bar/
+" but:
+" - tests/test_foo/
+" - tests/test_bar/
+"
+" Then you need to set this value to "src"
+if !exists("g:source_root")
+    let source_root = ""
+endif
+
+" Relative location under the project root where to look for the test files.
+" Not used when tests_structure is "side-by-side".
+if !exists("g:tests_root")
+    let tests_root = "tests"
 endif
 
 " Tests structure can be one of: flat, follow-hierarchy, side-by-side
@@ -149,14 +180,6 @@ fun! RunNose(path)
     endif
 endf
 
-fun! SwitchToAlternateFileForCurrentFile()
-    if IsTestFile(@%)
-        call SwitchToSourceFileForTestFile(@%)
-    else
-        call SwitchToTestFileForSourceFile(@%)
-    endif
-endf
-
 " -------------------------------------------------------------------------------
 " ----------------- BELOW HERE IS GARY'S CODE -----------------------------------
 " -------------------------------------------------------------------------------
@@ -185,6 +208,10 @@ fun! RunTests(target, args)
     set grepprg=nosetests
     silent w
     exec "grep! " . a:target . " " . a:args
+endf
+
+fun! SwitchToAlternateFileForCurrentFile()
+    call SwitchToAlternateFileForFile(@%)
 endf
 
 fun! RunTestsForCurrentFile()
