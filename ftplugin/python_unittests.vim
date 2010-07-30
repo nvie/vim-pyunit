@@ -16,17 +16,17 @@
 if exists("g:loaded_python_unittests_ftplugin")
     finish
 endif
-let g:loaded_python_unittests_ftplugin = 1
+let loaded_python_unittests_ftplugin = 1
 
 " Configuration of the test tool {{{
 " Set the pyunit_cmd to whatever is your testing tool (default: nosetests)
 if !exists("g:pyunit_cmd")
-    let g:pyunit_cmd = "nosetests -q --with-machineout"
+    let pyunit_cmd = "nosetests -q --with-machineout"
 endif
 
 " Set show_tests to 1 if you want to show the tests (default: 1)
 if !exists("g:show_tests")       " TODO: Use this one!
-    let g:show_tests = 1
+    let show_tests = 1
 endif
 
 let &grepformat = "%f:%l: fail: %m,%f:%l: error: %m"
@@ -35,7 +35,7 @@ let &grepprg = g:pyunit_cmd
 " Configuration for autodetecting project root {{{
 " Configure what files indicate a project root
 if !exists("g:projroot_indicators")
-    let g:projroot_indicators = [ ".git", ".lvimrc", "setup.py", "setup.cfg" ]
+    let projroot_indicators = [ ".git", ".lvimrc", "setup.py", "setup.cfg" ]
 endif
 
 " Scan from the current working directory up until the home dir, instead of
@@ -43,7 +43,7 @@ endif
 " user's home directory.  In those cases there will be scanned up until the
 " filesystem root directory.
 if !exists("g:projroot_stop_at_home_dir")
-    let g:projroot_stop_at_home_dir = 1
+    let projroot_stop_at_home_dir = 1
 endif
 " }}}
 " Configuration for tests organisation {{{
@@ -51,19 +51,19 @@ endif
 if !exists("g:test_prefix")
     " nosetests scans all files/directories starting with "test_", so this is
     " a sane default value.  There should not be a need to change this.
-    let g:test_prefix = "test_"
+    let test_prefix = "test_"
 endif
 
 " Relative location from the project root (the project root is autodetected,
 " see g:projroot_indicators)
 if !exists("g:tests_location")
-    let g:tests_location = "tests"
+    let tests_location = "tests"
 endif
 
 " Tests structure can be one of: flat, follow-hierarchy
-"let g:tests_structure = "flat"
+"let tests_structure = "flat"
 if !exists("g:tests_structure")
-    let g:tests_structure = "follow-hierarchy"
+    let tests_structure = "follow-hierarchy"
 endif
 " }}}
 
@@ -319,8 +319,8 @@ fun! RunNose(path)
     cclose           " close any existing cwindows
 
     " store old grep settings (to restore later)
-    let l:old_gfm=&grepformat
-    let l:old_gp=&grepprg
+    let old_gfm=&grepformat
+    let old_gp=&grepprg
 
     " write any changes before continuing
     if !&readonly
@@ -333,8 +333,8 @@ fun! RunNose(path)
     execute "silent! grep! ".a:path
 
     " restore grep settings
-    let &grepformat=l:old_gfm
-    let &grepprg=l:old_gp
+    let &grepformat=old_gfm
+    let &grepprg=old_gp
 
     " open cwindow
     let has_errors=getqflist() != []
@@ -362,11 +362,11 @@ fun! RunNose(path)
         echo ""
         hi Red ctermfg=red
         echohl Red
-        let l:numfail = len(getqflist())
-        if l:numfail == 1
+        let numfail = len(getqflist())
+        if numfail == 1
             echon "1 test failed."
         else
-            echon l:numfail." tests failed."
+            echon numfail." tests failed."
         endif
         silent cc!
     endif
