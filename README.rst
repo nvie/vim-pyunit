@@ -8,12 +8,21 @@ Installation
    - vim_bridge_:  This is required for the vim plugin scripts, to call
      directly into Python functions.
 
+2. Clone the git repository::
+
+       git clone git://github.com/nvie/vim-pyunit.git
+       cd vim-pyunit
+
+3. Build the plugin.  This simply concatenates two files::
+   
+       python build.py
+
+4. Copy the generated file ``ftplugin/python_pyunit.vim`` to your
+   ``~/.vim/ftplugin`` directory
+
 .. _nose: http://pypi.python.org/pypi/nose
 .. _nose_machineout: http://pypi.python.org/pypi/nose_machineout
 .. _vim_bridge: http://pypi.python.org/pypi/vim_bridge
-
-2. Copy the file ``ftplugin/python_nose.vim`` to your ``~/.vim/ftplugin``
-   directory
 
 
 Usage
