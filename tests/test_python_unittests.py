@@ -151,8 +151,8 @@ class TestSomething(unittest.TestCase):
 
     def test_get_source_file_for_test_file(self):  # {{{
         self.assertRaises(Exception,
-                mod.find_source_file_for_test_file, __file__)
+                mod.find_source_file_for_test_file, currfile)
         vimvar['g:source_root'] = 'src'
-        self.assertSameFile(mod.find_source_file_for_test_file(__file__),
+        self.assertSameFile(mod.find_source_file_for_test_file(currfile),
                 os.path.realpath('src/python_unittests.py'))
         # }}}
