@@ -231,9 +231,9 @@ def _vim_split_cmd(inverted=False):  # {{{
     # }}}
 
 
-def _open_buffer_cmd(path, is_testfile=True):  # {{{
+def _open_buffer_cmd(path, opposite=False):  # {{{
     path = _relpath(path, ".")
-    splitopts = _vim_split_cmd(is_testfile)
+    splitopts = _vim_split_cmd(opposite)
     if not splitopts:
         splitcmd = 'edit'
     elif int(vim.eval('bufexists("%s")' % path)):
@@ -259,7 +259,7 @@ def switch_to_test_file_for_source_file(path):  # {{{
 
 def switch_to_source_file_for_test_file(path):  # {{{
     sourcefile = find_source_file_for_test_file(path)
-    vim.command(_open_buffer_cmd(sourcefile, is_testfile=False))
+    vim.command(_open_buffer_cmd(sourcefile, opposite=True))
     # }}}
 
 

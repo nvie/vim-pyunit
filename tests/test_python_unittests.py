@@ -84,7 +84,7 @@ class TestSomething(unittest.TestCase):
                           os.path.join(proj_root, 'src'))
         # }}}
 
-    def test_vim_splitcmd(self):  # {{{
+    def test_vim_split_cmd(self):  # {{{
         self.assertEquals(mod._vim_split_cmd(), 'vert rightb')
         self.assertEquals(mod._vim_split_cmd(True), 'vert lefta')
 
@@ -101,10 +101,12 @@ class TestSomething(unittest.TestCase):
         self.assertEquals(mod._vim_split_cmd(), 'rightb')
         # }}}
 
-    def test_open_buffer(self):  # {{{
+    def test_open_buffer_cmd(self):  # {{{
         vimvar['bufexists("foo")'] = '1'
         self.assertTrue(mod._open_buffer_cmd('foo'),
                 'vert rightb sbuffer foo')
+        self.assertTrue(mod._open_buffer_cmd('foo', opposite=True),
+                'vert lefta sbuffer foo')
 
         vimvar['bufexists("foo")'] = '0'
         self.assertTrue(mod._open_buffer_cmd('foo'),
