@@ -78,7 +78,7 @@ class TestSomething(unittest.TestCase):
 
     def test_source_root(self):  # {{{
         self.assertEquals(mod.find_source_root(currfile),
-                          proj_root+'/')
+                          proj_root + '/')
         vimvar['g:source_root'] = 'src'
         self.assertEquals(mod.find_source_root(currfile),
                           os.path.join(proj_root, 'src'))
