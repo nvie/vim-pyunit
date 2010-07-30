@@ -23,6 +23,14 @@ let g:loaded_python_unittests_ftplugin = 1
 if !exists("g:pyunit_cmd")
     let g:pyunit_cmd = "nosetests -q --with-machineout"
 endif
+
+" Set show_tests to 1 if you want to show the tests (default: 1)
+if !exists("g:show_tests")       " TODO: Use this one!
+    let g:show_tests = 1
+endif
+
+let &grepformat = "%f:%l: fail: %m,%f:%l: error: %m"
+let &grepprg = g:pyunit_cmd
 "}}}
 " Configuration for autodetecting project root {{{
 " Configure what files indicate a project root
@@ -52,7 +60,7 @@ if !exists("g:tests_location")
     let g:tests_location = "tests"
 endif
 
-" Tests structure can be either flat or follow-hierarchy
+" Tests structure can be one of: flat, follow-hierarchy
 "let g:tests_structure = "flat"
 if !exists("g:tests_structure")
     let g:tests_structure = "follow-hierarchy"
@@ -160,7 +168,7 @@ def add_test_prefix_to_all_path_components(path):
     # }}}
 
 @bridged # {{{
-def get_test_file_for_file(path):
+def get_test_file_for_source_file(path):
     prefix = vim.eval("g:test_prefix")
     testsroot = get_tests_root(path)
 
@@ -178,36 +186,7 @@ def get_test_file_for_file(path):
     # }}}
 
 @bridged # {{{
-def is_test_file(path):
-    testroot = os.path.abspath(get_tests_root(path))
-    path = os.path.abspath(path)
-    return path.startswith(testroot)
-    # }}}
-
-def _open_buffer(path, splitopts): # {{{
-    path = _relpath(path, ".")
-    if int(vim.eval('bufexists("%s")' % path)):
-        splitcmd = 'sbuffer'
-    else:
-        splitcmd = 'split'
-    command = "%s %s %s" % (splitopts, splitcmd, path)
-    vim.command(command)
-    # }}}
-
-@bridged # {{{
-def switch_to_test_file_for_source_file(path):
-    testfile = get_test_file_for_file(path)
-    testdir = os.path.dirname(testfile)
-    if not os.path.isfile(testfile):
-        # Create the directory up until the file (if it doesn't exist yet)
-        if not os.path.exists(testdir):
-            os.makedirs(testdir)
-
-    _open_buffer(testfile, 'vert rightb')
-    # }}}
-
-@bridged # {{{
-def switch_to_source_file_for_test_file(path):
+def find_source_file_for_test_file(path):
     testsroot = get_tests_root(path)
     test_prefix = vim.eval("g:test_prefix")
 
@@ -270,10 +249,128 @@ def switch_to_source_file_for_test_file(path):
             if not os.path.isfile(sourcefile):
                 raise Exception("Source file not found.")
 
+    return sourcefile
+    # }}}
+
+@bridged # {{{
+def is_test_file(path):
+    testroot = os.path.abspath(get_tests_root(path))
+    path = os.path.abspath(path)
+    return path.startswith(testroot)
+    # }}}
+
+def _open_buffer(path, splitopts): # {{{
+    path = _relpath(path, ".")
+    if int(vim.eval('bufexists("%s")' % path)):
+        splitcmd = 'sbuffer'
+    else:
+        splitcmd = 'split'
+    command = "%s %s %s" % (splitopts, splitcmd, path)
+    vim.command(command)
+    # }}}
+
+@bridged # {{{
+def switch_to_test_file_for_source_file(path):
+    testfile = get_test_file_for_source_file(path)
+    testdir = os.path.dirname(testfile)
+    if not os.path.isfile(testfile):
+        # Create the directory up until the file (if it doesn't exist yet)
+        if not os.path.exists(testdir):
+            os.makedirs(testdir)
+
+    _open_buffer(testfile, 'vert rightb')
+    # }}}
+
+@bridged # {{{
+def switch_to_source_file_for_test_file(path):
+    sourcefile = find_source_file_for_test_file(path)
     _open_buffer(sourcefile, 'vert lefta')
     # }}}
 
+# === Running tests (def ) {{{1 ================================================
+
+@bridged # {{{
+def run_tests_for_file(path):
+    if not is_test_file(path):
+        path = get_test_file_for_source_file(path)
+    relpath = _relpath(path, '.')
+    vim.command('call RunTestsForTestFile("%s")' % relpath)
+    # }}}
+
+# }}}
+
 endpython
+
+fun! RunTestsForTestFile(path)
+    silent! echo
+    exec 'silent! echo -e "\033[1;36mRunning tests for ' . a:path . '\033[0m"'
+    silent write
+    call RunNose(a:path)
+endf
+
+fun! RunNose(path)
+    " TODO: fix this hard-coded "nosetests" string!
+    if !executable("nosetests")
+        echoerr "File " . "nosetests" . " not found. Please install it first."
+        return
+    endif
+
+    set lazyredraw   " delay redrawing
+    cclose           " close any existing cwindows
+
+    " store old grep settings (to restore later)
+    let l:old_gfm=&grepformat
+    let l:old_gp=&grepprg
+
+    " write any changes before continuing
+    if !&readonly
+        update
+    endif
+
+    " perform the grep itself
+    let &grepformat = "%f:%l: fail: %m,%f:%l: error: %m"
+    let &grepprg = g:pyunit_cmd
+    execute "silent! grep! ".a:path
+
+    " restore grep settings
+    let &grepformat=l:old_gfm
+    let &grepprg=l:old_gp
+
+    " open cwindow
+    let has_errors=getqflist() != []
+    if has_errors
+        " first, open the alternate window, too
+        call SwitchToAlternateFileForCurrentFile()
+        execute 'belowright copen'
+        nnoremap <buffer> <silent> c :cclose<CR>
+        nnoremap <buffer> <silent> q :cclose<CR>
+    endif
+
+    set nolazyredraw
+    redraw!
+
+    if !has_errors
+        " Show OK status
+        call s:GreenBar()
+        echo ""
+        hi Green ctermfg=green
+        echohl Green
+        echon "All tests passed."
+        echohl
+    else
+        call s:RedBar()
+        echo ""
+        hi Red ctermfg=red
+        echohl Red
+        let l:numfail = len(getqflist())
+        if l:numfail == 1
+            echon "1 test failed."
+        else
+            echon l:numfail." tests failed."
+        endif
+        silent cc!
+    endif
+endf
 
 fun! SwitchToAlternateFileForCurrentFile()
     if IsTestFile(@%)
@@ -283,17 +380,9 @@ fun! SwitchToAlternateFileForCurrentFile()
     endif
 endf
 
-nmap <F9> :call SwitchToAlternateFileForCurrentFile()<CR>
-
-" Plugin configuration {{{
-" Set show_tests to 1 if you want to show the tests (default: 0)
-if !exists("g:show_tests")       " TODO: Use this one!
-    let g:show_tests = 0
-endif
-"}}}
-
-let &grepformat = "%f:%l: fail: %m,%f:%l: error: %m"
-let &grepprg = g:pyunit_cmd
+" -------------------------------------------------------------------------------
+" ----------------- BELOW HERE IS GARY'S CODE -----------------------------------
+" -------------------------------------------------------------------------------
 
 " Unit Test Functions {{{
 fun! s:RedBar()
@@ -313,28 +402,6 @@ endf
 
 " {{{ Testing Support 
 
-fun! ClassToFilename(class_name)
-    let understored_class_name = substitute(a:class_name, '\(.\)\(\u\)', '\1_\U\2', 'g')
-    let file_name = substitute(understored_class_name, '\(\u\)', '\L\1', 'g')
-    return 'test_' . file_name . '.py'
-endf
-
-fun! NameOfCurrentClass()
-    let save_cursor = getpos(".")
-    normal $<cr>
-    call PythonDec('class', -1)
-    let line = getline('.')
-    call setpos('.', save_cursor)
-    let match_result = matchlist(line, ' *class \+\(\w\+\)')
-    return match_result[1]
-endf
-
-fun! TestFileForCurrentClass()
-    let class_name = NameOfCurrentClass()
-    let test_file_name = ModuleTestPath() . '/' . ClassToFilename(class_name)
-    return test_file_name
-endf
-
 fun! RunTests(target, args)
     silent ! echo
     exec 'silent ! echo -e "\033[1;36mRunning tests in ' . a:target . '\033[0m"'
@@ -343,13 +410,8 @@ fun! RunTests(target, args)
     exec "grep! " . a:target . " " . a:args
 endf
 
-fun! RunTestsForFile(args)
-    if @% =~ 'test_'
-        call RunTests('%', a:args)
-    else
-        let test_file_name = TestFileForCurrentFile()
-        call RunTests(test_file_name, a:args)
-    endif
+fun! RunTestsForCurrentFile()
+    call RunTestsForFile(@%)
 endf
 
 fun! RunAllTests(args)
@@ -389,20 +451,27 @@ endf
 " }}}
 
 " Keyboard mappings {{{
-nnoremap <leader>m :call RunTestsForFile('-q --with-machineout')<cr>:redraw<cr>:call JumpToError()<cr>
-nnoremap <leader>M :call RunTestsForFile('')<cr>
-nnoremap <leader>a :call RunAllTests('-q --with-machineout')<cr>:redraw<cr>:call JumpToError()<cr>
-nnoremap <leader>A :call RunAllTests('')<cr>
-nnoremap <leader>t :call JumpToTestsForClass()<cr>
-nnoremap <leader><leader> <c-^>
+" nnoremap <leader>m :call RunTestsForFile('-q --with-machineout')<cr>:redraw<cr>:call JumpToError()<cr>
+" nnoremap <leader>M :call RunTestsForFile('')<cr>
+" nnoremap <leader>a :call RunAllTests('-q --with-machineout')<cr>:redraw<cr>:call JumpToError()<cr>
+" nnoremap <leader>A :call RunAllTests('')<cr>
+" nnoremap <leader>t :call JumpToTestsForClass()<cr>
+" nnoremap <leader><leader> <c-^>
 " }}}
+
+" --------------------------------------------------------------------------------------
+" ------------------------------- HERE's MINE AGAIN ------------------------------------
+" --------------------------------------------------------------------------------------
+
+noremap <F8> :call RunTestsForCurrentFile()<CR>
+noremap! <F8> <Esc>:call RunTestsForCurrentFile()<CR>
+noremap <F9> :call SwitchToAlternateFileForCurrentFile()<CR>
+noremap! <F9> <Esc>:call SwitchToAlternateFileForCurrentFile()<CR>
 
 " Add mappings, unless the user didn't want this.
 " The default mapping is registered under to <F8> by default, unless the user
 " remapped it already (or a mapping exists already for <F8>)
-if !exists("no_plugin_maps") && !exists("no_pep8_maps")
-    if !hasmapto('Pep8()')
-        noremap <buffer> <F6> :call RunTestsForFile()<CR>
-        noremap! <buffer> <F6> :call PyUnit()<CR>
-    endif
+if !exists("no_plugin_maps") && !exists("no_pyunit_maps")
+    "if !hasmapto('RunTestsForCurrentFile()')
+    "endif
 endif
