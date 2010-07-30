@@ -18,6 +18,12 @@ if exists("g:loaded_python_unittests_ftplugin")
 endif
 let g:loaded_python_unittests_ftplugin = 1
 
+" Configuration of the test tool {{{
+" Set the pyunit_cmd to whatever is your testing tool (default: nosetests)
+if !exists("g:pyunit_cmd")
+    let g:pyunit_cmd = "nosetests -q --with-machineout"
+endif
+"}}}
 " Configuration for autodetecting project root {{{
 " Configure what files indicate a project root
 if !exists("g:projroot_indicators")
@@ -280,11 +286,6 @@ endf
 nmap <F9> :call SwitchToAlternateFileForCurrentFile()<CR>
 
 " Plugin configuration {{{
-" Set the pyunit_cmd to whatever is your testing tool (default: nosetests)
-if !exists("g:pyunit_cmd")
-    let g:pyunit_cmd = "nosetests -q --with-machineout"
-endif
-
 " Set show_tests to 1 if you want to show the tests (default: 0)
 if !exists("g:show_tests")       " TODO: Use this one!
     let g:show_tests = 0
