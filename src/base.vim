@@ -11,7 +11,6 @@
 " Based on Mike Crute's Vim plugin:
 "     http://code.crute.org/mcrute_dotfiles/file/a19ddffcabe6/.vim/plugin/python_testing.vim
 "
-
 " Only do this when not done yet for this buffer
 if exists("g:loaded_python_unittests_ftplugin")
     finish
@@ -105,6 +104,9 @@ if !exists("g:tests_split_window")
 endif
 " }}}
 
+hi CurrentErr term=reverse ctermfg=White ctermbg=Red gui=reverse
+sign define currenterr text=-> texthl=CurrentErr linehl=CurrentErr
+
 python << endpython
 __PYTHON_SOURCE__
 endpython
@@ -153,6 +155,15 @@ fun! RunNose(path)
         nnoremap <buffer> <silent> q :cclose<CR>
     endif
 
+    let bufnr = 0
+    for error in getqflist()
+        if error['valid']
+            let bufnr = error['bufnr']
+            let lnum = error['lnum']
+            break
+        endif
+    endfor
+
     set nolazyredraw
     redraw!
 
@@ -175,7 +186,9 @@ fun! RunNose(path)
         else
             echon numfail." tests failed."
         endif
+
         silent cc!
+        execute "sign place 1 name=currenterr line=".lnum." buffer=".bufnr
     endif
 endf
 
@@ -206,6 +219,7 @@ fun! SwitchToAlternateFileForCurrentFile()
 endf
 
 fun! RunTestsForCurrentFile()
+    sign unplace 1
     call RunTestsForFile(@%)
 endf
 
