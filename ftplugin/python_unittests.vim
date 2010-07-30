@@ -268,9 +268,9 @@ def is_test_file(path):
 
 def _vim_splitcmd(inverted=False): # {{{
     invert = {'top': 'bottom', 'left': 'right',
-              'right': 'left', 'bottom': 'top'}
+              'right': 'left', 'bottom': 'top', 'no': 'no'}
     mapping = {'top': 'lefta', 'left': 'vert lefta',
-               'right': 'vert rightb', 'bottom': 'rightb'}
+               'right': 'vert rightb', 'bottom': 'rightb', 'no': ''}
     splitoff_direction = vim.eval("g:tests_split_window")
     if inverted:
         return mapping[invert[splitoff_direction]]
@@ -278,13 +278,16 @@ def _vim_splitcmd(inverted=False): # {{{
         return mapping[splitoff_direction]
     # }}}
 
-def _open_buffer(path, splitopts): # {{{
+def _open_buffer(path, is_testfile=True): # {{{
     path = _relpath(path, ".")
-    if int(vim.eval('bufexists("%s")' % path)):
-        splitcmd = 'sbuffer'
+    splitopts = _vim_splitcmd(is_testfile)
+    if not splitopts:
+        splitcmd = 'edit'
+    elif int(vim.eval('bufexists("%s")' % path)):
+        splitcmd = splitopts + ' sbuffer'
     else:
-        splitcmd = 'split'
-    command = "%s %s %s" % (splitopts, splitcmd, path)
+        splitcmd = splitopts + ' split'
+    command = "%s %s" % (splitcmd, path)
     vim.command(command)
     # }}}
 
@@ -297,13 +300,13 @@ def switch_to_test_file_for_source_file(path):
         if not os.path.exists(testdir):
             os.makedirs(testdir)
 
-    _open_buffer(testfile, _vim_splitcmd())
+    _open_buffer(testfile)
     # }}}
 
 @bridged # {{{
 def switch_to_source_file_for_test_file(path):
     sourcefile = find_source_file_for_test_file(path)
-    _open_buffer(sourcefile, _vim_splitcmd(inverted=True))
+    _open_buffer(sourcefile, is_testfile=False)
     # }}}
 
 @bridged # {{{
