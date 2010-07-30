@@ -25,6 +25,9 @@ proj_root = os.getcwd()
 
 class TestSomething(unittest.TestCase):
 
+    def assertSameFile(self, x, y):
+        self.assertEquals(os.path.realpath(x), os.path.realpath(y))
+
     # Prepare testing environment {{{
 
     def setUp(self):
@@ -80,10 +83,75 @@ class TestSomething(unittest.TestCase):
                           os.path.join(proj_root, 'src'))
         # }}}
 
-    def test_(self):  # {{{
-        self.assertEquals(mod.find_source_root(__file__),
-                          proj_root+'/')
+    def test_vim_splitcmd(self):  # {{{
+        self.assertEquals(mod._vim_splitcmd(), 'vert rightb')
+        self.assertEquals(mod._vim_splitcmd(True), 'vert lefta')
+
+        vimvar['g:tests_split_window'] = 'left'
+        self.assertEquals(mod._vim_splitcmd(), 'vert lefta')
+        self.assertEquals(mod._vim_splitcmd(True), 'vert rightb')
+
+        vimvar['g:tests_split_window'] = 'top'
+        self.assertEquals(mod._vim_splitcmd(), 'lefta')
+        self.assertEquals(mod._vim_splitcmd(True), 'rightb')
+
+        vimvar['g:tests_split_window'] = 'bottom'
+        self.assertEquals(mod._vim_splitcmd(True), 'lefta')
+        self.assertEquals(mod._vim_splitcmd(), 'rightb')
+        # }}}
+
+    def test_open_buffer(self):  # {{{
+        vimvar['bufexists("foo")'] = '1'
+        self.assertTrue(mod._open_buffer_cmd('foo'),
+                'vert rightb sbuffer foo')
+
+        vimvar['bufexists("foo")'] = '0'
+        self.assertTrue(mod._open_buffer_cmd('foo'),
+                'vert rightb split foo')
+
+        vimvar['g:tests_split_window'] = 'no'
+        self.assertTrue(mod._open_buffer_cmd('foo'),
+                'edit foo')
+        # }}}
+
+    def test_get_test_file_for_normal_source_file(self):  # {{{
+        self.assertSameFile(mod.get_test_file_for_source_file('foo/bar/qux.py'),
+                'tests/test_foo/test_bar/test_qux.py')
+
+        vimvar['g:tests_root'] = 'misc/mytests'
+        self.assertSameFile(mod.get_test_file_for_source_file('foo/bar/qux.py'),
+                'misc/mytests/test_foo/test_bar/test_qux.py')
+
+        vimvar['g:tests_structure'] = 'flat'
+        self.assertSameFile(mod.get_test_file_for_source_file('foo/bar/qux.py'),
+                'misc/mytests/test_foo_bar_qux.py')
+
+        vimvar['g:tests_structure'] = 'side-by-side'
+        self.assertSameFile(mod.get_test_file_for_source_file('foo/bar/qux.py'),
+                'foo/bar/test_qux.py')
+        # }}}
+
+    def test_get_test_file_for_init_source_file(self):  # {{{
+        self.assertSameFile(mod.get_test_file_for_source_file('foo/bar/__init__.py'),
+                'tests/test_foo/test_bar.py')
+
+        vimvar['g:tests_root'] = 'misc/mytests'
+        self.assertSameFile(mod.get_test_file_for_source_file('foo/bar/__init__.py'),
+                'misc/mytests/test_foo/test_bar.py')
+
+        vimvar['g:tests_structure'] = 'flat'
+        self.assertSameFile(mod.get_test_file_for_source_file('foo/bar/__init__.py'),
+                'misc/mytests/test_foo_bar.py')
+
+        vimvar['g:tests_structure'] = 'side-by-side'
+        self.assertSameFile(mod.get_test_file_for_source_file('foo/bar/__init__.py'),
+                'foo/test_bar.py')
+        # }}}
+
+    def test_get_source_file_for_test_file(self):  # {{{
+        self.assertRaises(Exception,
+                mod.find_source_file_for_test_file, __file__)
         vimvar['g:source_root'] = 'src'
-        self.assertEquals(mod.find_source_root(__file__),
-                          os.path.join(proj_root, 'src'))
+        self.assertSameFile(mod.find_source_file_for_test_file(__file__),
+                os.path.realpath('src/python_unittests.py'))
         # }}}
