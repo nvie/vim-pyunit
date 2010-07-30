@@ -150,6 +150,7 @@ fun! RunNose(path)
         " first, open the alternate window, too
         call SwitchToAlternateFileForCurrentFile()
         execute 'belowright copen'
+        setlocal wrap
         nnoremap <buffer> <silent> c :cclose<CR>
         nnoremap <buffer> <silent> q :cclose<CR>
     endif
