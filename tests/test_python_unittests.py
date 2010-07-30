@@ -21,6 +21,7 @@ import python_unittests as mod
 
 # Calculate the *real* project root for this test scenario
 proj_root = os.getcwd()
+currfile = __file__.replace('.pyc', '.py')
 
 
 class TestSomething(unittest.TestCase):
@@ -72,14 +73,14 @@ class TestSomething(unittest.TestCase):
         # }}}
 
     def test_find_project_root(self):  # {{{
-        self.assertEquals(mod.find_project_root(__file__), proj_root)
+        self.assertEquals(mod.find_project_root(currfile), proj_root)
         # }}}
 
     def test_source_root(self):  # {{{
-        self.assertEquals(mod.find_source_root(__file__),
+        self.assertEquals(mod.find_source_root(currfile),
                           proj_root+'/')
         vimvar['g:source_root'] = 'src'
-        self.assertEquals(mod.find_source_root(__file__),
+        self.assertEquals(mod.find_source_root(currfile),
                           os.path.join(proj_root, 'src'))
         # }}}
 
