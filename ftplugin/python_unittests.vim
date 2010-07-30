@@ -35,7 +35,7 @@ let &grepprg = g:pyunit_cmd
 " Configuration for autodetecting project root {{{
 " Configure what files indicate a project root
 if !exists("g:projroot_indicators")
-    let projroot_indicators = [ ".git", ".lvimrc", "setup.py", "setup.cfg" ]
+    let projroot_indicators = [ ".git", "setup.py", "setup.cfg" ]
 endif
 
 " Scan from the current working directory up until the home dir, instead of
@@ -64,6 +64,13 @@ endif
 "let tests_structure = "flat"
 if !exists("g:tests_structure")
     let tests_structure = "follow-hierarchy"
+endif
+" }}}
+" Configuration for editing preferences {{{
+if !exists("g:tests_split_window")
+    " Specifies how the test window should open, relative to the source file
+    " window.  Takes one of the following values: top, bottom, left, right
+    let tests_split_window = "right"
 endif
 " }}}
 
@@ -259,6 +266,18 @@ def is_test_file(path):
     return path.startswith(testroot)
     # }}}
 
+def _vim_splitcmd(inverted=False): # {{{
+    invert = {'top': 'bottom', 'left': 'right',
+              'right': 'left', 'bottom': 'top'}
+    mapping = {'top': 'lefta', 'left': 'vert lefta',
+               'right': 'vert rightb', 'bottom': 'rightb'}
+    splitoff_direction = vim.eval("g:tests_split_window")
+    if inverted:
+        return mapping[invert[splitoff_direction]]
+    else:
+        return mapping[splitoff_direction]
+    # }}}
+
 def _open_buffer(path, splitopts): # {{{
     path = _relpath(path, ".")
     if int(vim.eval('bufexists("%s")' % path)):
@@ -278,16 +297,14 @@ def switch_to_test_file_for_source_file(path):
         if not os.path.exists(testdir):
             os.makedirs(testdir)
 
-    _open_buffer(testfile, 'vert rightb')
+    _open_buffer(testfile, _vim_splitcmd())
     # }}}
 
 @bridged # {{{
 def switch_to_source_file_for_test_file(path):
     sourcefile = find_source_file_for_test_file(path)
-    _open_buffer(sourcefile, 'vert lefta')
+    _open_buffer(sourcefile, _vim_splitcmd(inverted=True))
     # }}}
-
-# === Running tests (def ) {{{1 ================================================
 
 @bridged # {{{
 def run_tests_for_file(path):
@@ -296,8 +313,6 @@ def run_tests_for_file(path):
     relpath = _relpath(path, '.')
     vim.command('call RunTestsForTestFile("%s")' % relpath)
     # }}}
-
-# }}}
 
 endpython
 
