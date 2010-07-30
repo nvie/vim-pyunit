@@ -1,0 +1,53 @@
+Installation
+------------
+1. Install the following packages from PyPI:
+
+   - nose_: the unit test runner;
+   - nose_machineout_:  The ``machineout`` plugin formats the ``nose`` output
+     so that Vim can parse it more easily;
+   - vim_bridge_:  This is required for the vim plugin scripts, to call
+     directly into Python functions.
+
+.. _nose: http://pypi.python.org/pypi/nose
+.. _nose_machineout: http://pypi.python.org/pypi/nose_machineout
+.. _vim_bridge: http://pypi.python.org/pypi/vim_bridge
+
+2. Copy the file ``ftplugin/python_nose.vim`` to your ``~/.vim/ftplugin``
+   directory
+
+
+Usage
+-----
+1. Open a Python file (or its corresponding unit test file named
+   ``test_<filename>.py``)
+2. Press ``<F8>`` to run ``nosetests`` on it
+
+It shows the errors inside a quickfix window, which will allow your to quickly
+jump to the error locations by simply pressing ``[Enter]``.
+
+
+Configuration
+-------------
+The plugin supports setting of the following variables:
+
++-------------------------------+--------------------------------------------------------------------------------------------------+------------------------+--------------------------------------------------+
+| Variable                      | Description                                                                                      | Values                 | Default                                          |
++===============================+==================================================================================================+========================+==================================================+
+| ``show_tests``                | Shows the tests.                                                                                 | 0 or 1                 | ``1``                                            |
++-------------------------------+--------------------------------------------------------------------------------------------------+------------------------+--------------------------------------------------+
+| ``pyunit_cmd``                | The command to run the unit test.                                                                | any string             | ``"nosetests -q --with-machineout"``             |
++-------------------------------+--------------------------------------------------------------------------------------------------+------------------------+--------------------------------------------------+
+| ``projroot_indicators``       | List of filenames indicating the project root.                                                   | list of file names     | ``[".git", ".lvimrc", "setup.py", "setup.cfg"]`` |
++-------------------------------+--------------------------------------------------------------------------------------------------+------------------------+--------------------------------------------------+
+| ``projroot_stop_at_home_dir`` | Stop the search for the project root at the user's home dir.                                     | 0 or 1                 | ``1``                                            |
++-------------------------------+--------------------------------------------------------------------------------------------------+------------------------+--------------------------------------------------+
+| ``test_prefix``               | The filename prefix to use for test files.                                                       | any string             | ``"test_"``                                      |
++-------------------------------+--------------------------------------------------------------------------------------------------+------------------------+--------------------------------------------------+
+| ``test_suffix``               | *Not implemented yet*                                                                            | 0 or 1                 | n/a                                              |
++-------------------------------+--------------------------------------------------------------------------------------------------+------------------------+--------------------------------------------------+
+| ``tests_location``            | The location of the tests directory. Relative to the project directory.                          | directory spec         | ``"tests"``                                      |
++-------------------------------+--------------------------------------------------------------------------------------------------+------------------------+--------------------------------------------------+
+| ``tests_structure``           | Specifies how you wish to organise your tests.                                                   | flat, follow-hierarchy | ``"follow-hierarchy"``                           |
++-------------------------------+--------------------------------------------------------------------------------------------------+------------------------+--------------------------------------------------+
+| ``tests_split_window``        | Specifies where test files should be opened, relative to the source file. *Not implemented yet.* | left, right            | ``"right"``                                      |
++-------------------------------+--------------------------------------------------------------------------------------------------+------------------------+--------------------------------------------------+
