@@ -35,6 +35,35 @@ It shows the errors inside a quickfix window, which will allow your to quickly
 jump to the error locations by simply pressing ``[Enter]``.
 
 
+Source files vs. test files
+---------------------------
+``vim-pyunit`` assumes that you have a single test file for each Python source
+file.  The settings ``test_prefix``, ``test_suffix``, ``source_root``,
+``tests_root``, and ``tests_structure`` determine how the plugin finds which
+test files belong to which source files.
+
+
+Keyboard mappings
+-----------------
+By default, the ``vim-pyunit`` plugin defines the following keyboard
+mappings:
+
++----------+------------------------------------------------------------------+
+| Keymap   | Description                                                      |
++==========+==================================================================+
+| F8       | Run ``nosetests`` for the current file. This mapping can be used |
+|          | on both the source file, and on its corresponding test file.     |
++----------+------------------------------------------------------------------+
+| Shift+F8 | Run ``nosetests`` for all test files in the project, this is     |
+|          | equivalent to running ``nosetests`` in the root of your project. |
++----------+------------------------------------------------------------------+
+| F9       | Switch between the source and the corresponding test file. If    |
+|          | the source or test file is not yet open, it is opened. The       |
+|          | setting ``tests_split_window`` is used to determine where the    |
+|          | file needs to be opened screen-wise.                             |
++----------+------------------------------------------------------------------+
+
+
 Configuration
 -------------
 The plugin supports setting of the following variables:
