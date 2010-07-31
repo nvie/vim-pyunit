@@ -110,8 +110,6 @@ __PYTHON_SOURCE__
 endpython
 
 fun! RunTestsForTestFile(path)
-    silent! echo
-    exec 'silent! echo -e "\033[1;36mRunning tests for ' . a:path . '\033[0m"'
     silent write
     call RunNose(a:path)
 endf
@@ -204,8 +202,6 @@ endf
 " {{{ Testing Support 
 
 fun! RunTests(target, args)
-    silent ! echo
-    exec 'silent ! echo -e "\033[1;36mRunning tests in ' . a:target . '\033[0m"'
     set grepprg=nosetests
     silent w
     exec "grep! " . a:target . " " . a:args
@@ -220,8 +216,6 @@ fun! RunTestsForCurrentFile()
 endf
 
 fun! RunAllTests(args)
-    silent ! echo
-    silent ! echo -e "\033[1;36mRunning all unit tests\033[0m"
     set grepprg=nosetests
     silent w
     exec "grep! tests.unit " . a:args
