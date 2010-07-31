@@ -263,12 +263,13 @@ def switch_to_source_file_for_test_file(path):  # {{{
     # }}}
 
 
-@bridged
+@bridged  # {{{
 def switch_to_alternate_file_for_file(path):
     if is_test_file(path):
         switch_to_source_file_for_test_file(path)
     else:
         switch_to_test_file_for_source_file(path)
+    # }}}
 
 
 @bridged  # {{{
