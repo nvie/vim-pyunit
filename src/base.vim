@@ -50,7 +50,8 @@ endif
 " Prefix used for all path components of the test file
 if !exists("g:test_prefix")
     " nosetests scans all files/directories starting with "test_", so this is
-    " a sane default value.  There should not be a need to change this.
+    " a sane default value.  There should not be a need to change this if you
+    " want to use nose.
     let test_prefix = "test_"
 endif
 
