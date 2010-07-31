@@ -201,12 +201,6 @@ endf
 
 " {{{ Testing Support 
 
-fun! RunTests(target, args)
-    set grepprg=nosetests
-    silent w
-    exec "grep! " . a:target . " " . a:args
-endf
-
 fun! SwitchToAlternateFileForCurrentFile()
     call SwitchToAlternateFileForFile(@%)
 endf
@@ -243,10 +237,6 @@ fun! JumpToError()
         echo "All tests passed"
     endif
 endf
-
-fun! JumpToTestsForClass()
-    exec 'e ' . TestFileForCurrentClass()
-endf
 " }}}
 
 " Keyboard mappings {{{
@@ -254,8 +244,6 @@ endf
 " nnoremap <leader>M :call RunTestsForFile('')<cr>
 " nnoremap <leader>a :call RunAllTests('-q --with-machineout')<cr>:redraw<cr>:call JumpToError()<cr>
 " nnoremap <leader>A :call RunAllTests('')<cr>
-" nnoremap <leader>t :call JumpToTestsForClass()<cr>
-" nnoremap <leader><leader> <c-^>
 " }}}
 
 " --------------------------------------------------------------------------------------
