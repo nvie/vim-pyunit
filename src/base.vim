@@ -209,10 +209,9 @@ fun! RunTestsForCurrentFile()
     call RunTestsForFile(@%)
 endf
 
-fun! RunAllTests(args)
-    set grepprg=nosetests
+fun! RunAllTests()
     silent w
-    exec "grep! tests.unit " . a:args
+    call RunNose('')
 endf
 
 fun! JumpToError()
@@ -252,6 +251,8 @@ endf
 
 noremap <F8> :call RunTestsForCurrentFile()<CR>
 noremap! <F8> <Esc>:call RunTestsForCurrentFile()<CR>
+noremap <S-F8> :call RunAllTests()<CR>
+noremap! <S-F8> <Esc>:call RunAllTests()<CR>
 noremap <F9> :call SwitchToAlternateFileForCurrentFile()<CR>
 noremap! <F9> <Esc>:call SwitchToAlternateFileForCurrentFile()<CR>
 
