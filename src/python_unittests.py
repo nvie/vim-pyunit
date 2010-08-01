@@ -232,7 +232,6 @@ def _vim_split_cmd(inverted=False):  # {{{
 
 
 def _open_buffer_cmd(path, opposite=False):  # {{{
-    path = _relpath(path, ".")
     splitopts = _vim_split_cmd(opposite)
     if not splitopts:
         splitcmd = 'edit'
@@ -248,6 +247,7 @@ def _open_buffer_cmd(path, opposite=False):  # {{{
 def switch_to_test_file_for_source_file(path):  # {{{
     testfile = get_test_file_for_source_file(path)
     testdir = os.path.dirname(testfile)
+    testfile = _relpath(testfile, '.')
     if not os.path.isfile(testfile):
         # Create the directory up until the file (if it doesn't exist yet)
         if not os.path.exists(testdir):
@@ -259,7 +259,8 @@ def switch_to_test_file_for_source_file(path):  # {{{
 
 def switch_to_source_file_for_test_file(path):  # {{{
     sourcefile = find_source_file_for_test_file(path)
-    vim.command(_open_buffer_cmd(sourcefile, opposite=True))
+    relpath = _relpath(sourcefile, '.')
+    vim.command(_open_buffer_cmd(relpath, opposite=True))
     # }}}
 
 
