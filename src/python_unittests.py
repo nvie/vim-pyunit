@@ -249,10 +249,11 @@ def switch_to_test_file_for_source_file(path):  # {{{
     testdir = os.path.dirname(testfile)
     testfile = _relpath(testfile, '.')
     if not os.path.isfile(testfile):
-        # Ask the user for confirmation
-        msg = 'confirm("Test file does not exist yet. Create %s now?", "&Yes\n&No")' % testfile
-        if int(vim.eval(msg)) != 1:
-            return
+        if int(vim.eval('g:confirm_test_creation')):
+            # Ask the user for confirmation
+            msg = 'confirm("Test file does not exist yet. Create %s now?", "&Yes\n&No")' % testfile
+            if int(vim.eval(msg)) != 1:
+                return
 
         # Create the directory up until the file (if it doesn't exist yet)
         if not os.path.exists(testdir):

@@ -97,5 +97,7 @@ The plugin supports setting of the following variables:
 |                               | to ``no``, doesn't open a new window at all,   |                              |                                       |
 |                               | but reuses the current buffer.                 |                              |                                       |
 +-------------------------------+------------------------------------------------+------------------------------+---------------------------------------+
+| ``confirm_test_creation``     | Ask to confirm creation of new test files.     | 0 or 1                       | ``1``                                 |
++-------------------------------+------------------------------------------------+------------------------------+---------------------------------------+
 
 

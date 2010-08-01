@@ -99,6 +99,10 @@ if !exists("g:tests_structure")
 endif
 " }}}
 " Configuration for editing preferences {{{
+if !exists("g:confirm_test_creation")
+    " Set this to 0 if you want to silently create new test files
+    let confirm_test_creation = 1
+endif
 if !exists("g:tests_split_window")
     " Specifies how the test window should open, relative to the source file
     " window.  Takes one of the following values: top, bottom, left, right
