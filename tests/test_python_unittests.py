@@ -123,43 +123,53 @@ class TestSomething(unittest.TestCase):
         # }}}
 
     def test_get_test_file_for_normal_source_file(self):  # {{{
-        self.assertSameFile(mod.get_test_file_for_source_file('foo/bar/qux.py'),
+        self.assertSameFile(
+                mod.get_test_file_for_source_file('foo/bar/qux.py'),
                 'tests/test_foo/test_bar/test_qux.py')
 
         vimvar['g:PyUnitTestsRoot'] = 'misc/mytests'
-        self.assertSameFile(mod.get_test_file_for_source_file('foo/bar/qux.py'),
+        self.assertSameFile(
+                mod.get_test_file_for_source_file('foo/bar/qux.py'),
                 'misc/mytests/test_foo/test_bar/test_qux.py')
 
         vimvar['g:PyUnitTestsStructure'] = 'flat'
-        self.assertSameFile(mod.get_test_file_for_source_file('foo/bar/qux.py'),
+        self.assertSameFile(
+                mod.get_test_file_for_source_file('foo/bar/qux.py'),
                 'misc/mytests/test_foo_bar_qux.py')
 
         vimvar['g:PyUnitTestsStructure'] = 'side-by-side'
-        self.assertSameFile(mod.get_test_file_for_source_file('foo/bar/qux.py'),
+        self.assertSameFile(
+                mod.get_test_file_for_source_file('foo/bar/qux.py'),
                 'foo/bar/test_qux.py')
         # }}}
 
     def test_get_test_file_for_init_source_file(self):  # {{{
-        self.assertSameFile(mod.get_test_file_for_source_file('foo/bar/__init__.py'),
+        self.assertSameFile(
+                mod.get_test_file_for_source_file('foo/bar/__init__.py'),
                 'tests/test_foo/test_bar.py')
 
         vimvar['g:PyUnitTestsRoot'] = 'misc/mytests'
-        self.assertSameFile(mod.get_test_file_for_source_file('foo/bar/__init__.py'),
+        self.assertSameFile(
+                mod.get_test_file_for_source_file('foo/bar/__init__.py'),
                 'misc/mytests/test_foo/test_bar.py')
 
         vimvar['g:PyUnitTestsStructure'] = 'flat'
-        self.assertSameFile(mod.get_test_file_for_source_file('foo/bar/__init__.py'),
+        self.assertSameFile(
+                mod.get_test_file_for_source_file('foo/bar/__init__.py'),
                 'misc/mytests/test_foo_bar.py')
 
         vimvar['g:PyUnitTestsStructure'] = 'side-by-side'
-        self.assertSameFile(mod.get_test_file_for_source_file('foo/bar/__init__.py'),
+        self.assertSameFile(
+                mod.get_test_file_for_source_file('foo/bar/__init__.py'),
                 'foo/test_bar.py')
         # }}}
 
     def test_get_source_file_for_test_file(self):  # {{{
         self.assertRaises(Exception,
                 mod.find_source_file_for_test_file, currfile)
+
         vimvar['g:PyUnitSourceRoot'] = 'src'
-        self.assertSameFile(mod.find_source_file_for_test_file(currfile),
+        self.assertSameFile(
+                mod.find_source_file_for_test_file('tests/test_python_unittests.py'),
                 os.path.realpath('src/python_unittests.py'))
         # }}}
