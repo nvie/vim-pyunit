@@ -101,3 +101,12 @@ The plugin supports setting of the following variables:
 +-------------------------------+------------------------------------------------+------------------------------+---------------------------------------+
 
 
+Tips
+----
+This plugin goes well together with the following plugins:
+
+- PEP8_ (Python coding style checker under ``<F6>``)
+- PyFlakes_ (Python static syntax checker under ``<F7>``)
+
+.. _PEP8: http://github.com/nvie/vim-pep8
+.. _PyFlakes: http://github.com/nvie/vim-pyflakes
