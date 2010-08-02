@@ -59,9 +59,6 @@ class TestSomething(unittest.TestCase):
 
         vimvar['g:PyUnitTestsRoot'] = 'my_tests'
         self.assertFalse(mod.is_test_file('tests/foo.py'))
-
-        vimvar['g:PyUnitTestsStructure'] = 'side-by-side'
-        self.assertTrue(mod.is_test_file('src/module/test_foo.py'))
         # }}}
 
     def test_is_fs_root(self):  # {{{
@@ -136,11 +133,6 @@ class TestSomething(unittest.TestCase):
         self.assertSameFile(
                 mod.get_test_file_for_source_file('foo/bar/qux.py'),
                 'misc/mytests/test_foo_bar_qux.py')
-
-        vimvar['g:PyUnitTestsStructure'] = 'side-by-side'
-        self.assertSameFile(
-                mod.get_test_file_for_source_file('foo/bar/qux.py'),
-                'foo/bar/test_qux.py')
         # }}}
 
     def test_get_test_file_for_init_source_file(self):  # {{{
@@ -157,11 +149,6 @@ class TestSomething(unittest.TestCase):
         self.assertSameFile(
                 mod.get_test_file_for_source_file('foo/bar/__init__.py'),
                 'misc/mytests/test_foo_bar.py')
-
-        vimvar['g:PyUnitTestsStructure'] = 'side-by-side'
-        self.assertSameFile(
-                mod.get_test_file_for_source_file('foo/bar/__init__.py'),
-                'foo/test_bar.py')
         # }}}
 
     def test_get_source_file_for_test_file(self):  # {{{

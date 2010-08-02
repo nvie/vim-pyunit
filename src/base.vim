@@ -87,12 +87,11 @@ if !exists("g:PyUnitSourceRoot")
 endif
 
 " Relative location under the project root where to look for the test files.
-" Not used when PyUnitTestsStructure is "side-by-side".
 if !exists("g:PyUnitTestsRoot")
     let PyUnitTestsRoot = "tests"
 endif
 
-" Tests structure can be one of: flat, follow-hierarchy, side-by-side
+" Tests structure can be one of: flat, follow-hierarchy
 "let PyUnitTestsStructure = "flat"
 if !exists("g:PyUnitTestsStructure")
     let PyUnitTestsStructure = "follow-hierarchy"

@@ -121,9 +121,6 @@ def get_test_file_for_source_file(path):  # {{{
     if tests_structure == "flat":
         u_relpath = relpath.replace("/", "_")
         components = [get_tests_root(path), prefix + u_relpath]
-    elif tests_structure == "side-by-side":
-        reldir, filename = os.path.split(relpath)
-        components = [reldir, prefix + filename]
     else:
         relpath = add_test_prefix_to_all_path_components(relpath)
         components = [get_tests_root(path), relpath]
@@ -206,18 +203,10 @@ def find_source_file_for_test_file(path):  # {{{
 
 
 def is_test_file(path):  # {{{
-    if vim.eval('g:PyUnitTestsStructure') == 'side-by-side':
-        # For side-by-side, test files need only to start with the
-        # prefix, their location is unimportant
-        prefix = vim.eval('g:PyUnitTestPrefix')
-        _, filename = os.path.split(path)
-        return filename.startswith(prefix)
-    else:
-        # For non-side-by-side tests, being in the test root means
-        # you're a test file
-        testroot = os.path.abspath(get_tests_root(path))
-        path = os.path.abspath(path)
-        return path.startswith(testroot)
+    # Being in the test root means you're a test file
+    testroot = os.path.abspath(get_tests_root(path))
+    path = os.path.abspath(path)
+    return path.startswith(testroot)
     # }}}
 
 
