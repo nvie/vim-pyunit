@@ -69,6 +69,38 @@ class TestSomething(unittest.TestCase):
         self.assertFalse(mod.is_fs_root(os.path.expandvars('$HOME')))
         # }}}
 
+    def test_relpath(self):  # {{{
+        # Nice and simple
+        self.assertEquals(
+                mod._relpath('/tmp/foo/bar', '/tmp', try_stdlib=False),
+                'foo/bar')
+        self.assertEquals(
+                mod._relpath('/etc/passwd', '/', try_stdlib=False),
+                'etc/passwd')
+
+        # Walking backward
+        self.assertEquals(
+                mod._relpath('.././foo/bar.py', '.', try_stdlib=False),
+                '../foo/bar.py')
+        self.assertEquals(
+                mod._relpath('/a/b', '/c', try_stdlib=False),
+                '../a/b')
+        self.assertEquals(
+                mod._relpath('/a/b/c', '/d/e', try_stdlib=False),
+                '../../a/b/c')
+        self.assertEquals(
+                mod._relpath('/', '/a/b', try_stdlib=False),
+                '../../')
+
+        # Directory signs shouldn't matter
+        self.assertEquals(
+                mod._relpath('foo/', 'foo', try_stdlib=False), '.')
+        self.assertEquals(
+                mod._relpath('foo', 'foo/', try_stdlib=False), '.')
+        self.assertEquals(
+                mod._relpath('foo', 'foo', try_stdlib=False), '.')
+        # }}}
+
     def test_find_project_root(self):  # {{{
         self.assertEquals(mod.find_project_root(currfile), proj_root)
         # }}}

@@ -51,27 +51,30 @@ def _strip_suffix(s, suffix, replace_by=''):  # {{{
     # }}}
 
 
-def _relpath(path, start='.'):  # {{{
+def _relpath(path, start='.', try_stdlib=True):  # {{{
     """Returns the relative version of the path.  This is a backport of
     Python's stdlib routine os.path.relpath(), which is not yet available in
     Python 2.4.
 
     """
     # Fall back onto stdlib version of it, if available
-    try:
-        return os.path.relpath(path, start)
-    except NameError:
-        # Python versions below 2.6 don't have the relpath function
-        # It's ok, we fall back onto our own implementation
-        pass
+    if try_stdlib:
+        try:
+            return os.path.relpath(path, start)
+        except AttributeError:
+            # Python versions below 2.6 don't have the relpath function
+            # It's ok, we fall back onto our own implementation
+            pass
 
     fullp = os.path.abspath(path)
     fulls = os.path.abspath(start)
-    matchs = os.path.normpath(start) + os.sep
-    print fullp
-    print fulls
+    matchs = os.path.normpath(start)
+    if not matchs.endswith(os.sep):
+        matchs += os.sep
 
-    if fullp.startswith(matchs):
+    if fullp == fulls:
+        return '.'
+    elif fullp.startswith(matchs):
         return fullp[len(matchs):]
     else:
         # Strip dirs off of fulls until it is a prefix of fullp
@@ -177,7 +180,6 @@ def find_source_file_for_test_file(path):  # {{{
 
         intermediate_pairs = ['/', '_']
         last_pair = [extension, '/__init__' + extension]
-        print intermediate_pairs, last_pair
         for slashes in slashgenerator(len(parts) - 1, intermediate_pairs, \
                                last_pair):
             guess = os.path.join(src_root, "".join(interlace(parts, slashes)))
@@ -235,11 +237,13 @@ def _open_buffer_cmd(path, opposite=False):  # {{{
     return command
     # }}}
 
+def lcd_to_project_root(path):  # {{{
+    vim.command("lcd %s" % find_project_root(path))
+    # }}}
 
 def switch_to_test_file_for_source_file(path):  # {{{
     testfile = get_test_file_for_source_file(path)
     testdir = os.path.dirname(testfile)
-    testfile = _relpath(testfile, '.')
     if not os.path.isfile(testfile):
         if int(vim.eval('g:PyUnitConfirmTestCreation')):
             # Ask the user for confirmation
@@ -252,13 +256,14 @@ def switch_to_test_file_for_source_file(path):  # {{{
             os.makedirs(testdir)
 
     vim.command(_open_buffer_cmd(testfile))
+    lcd_to_project_root(path)
     # }}}
 
 
 def switch_to_source_file_for_test_file(path):  # {{{
     sourcefile = find_source_file_for_test_file(path)
-    relpath = _relpath(sourcefile, '.')
-    vim.command(_open_buffer_cmd(relpath, opposite=True))
+    vim.command(_open_buffer_cmd(sourcefile, opposite=True))
+    lcd_to_project_root(path)
     # }}}
 
 

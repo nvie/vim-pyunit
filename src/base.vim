@@ -179,13 +179,8 @@ fun! PyUnitRunNose(path) " {{{
         else
             echon numfail." tests failed."
         endif
-        silent cc!
     endif
 endf # }}}
-
-" -------------------------------------------------------------------------------
-" ----------------- BELOW HERE IS GARY'S CODE -----------------------------------
-" -------------------------------------------------------------------------------
 
 fun! s:RedBar() " {{{
     hi RedBar ctermfg=white ctermbg=red guibg=red
@@ -213,33 +208,6 @@ fun! PyUnitRunAllTests() " {{{
     silent w
     call PyUnitRunNose('')
 endf " }}}
-
-fun! JumpToError() " {{{
-    if getqflist() != []
-        for error in getqflist()
-            if error['valid']
-                break
-            endif
-        endfor
-        let error_message = substitute(error['text'], '^ *', '', 'g')
-        " silent cc!
-        let error_buffer = error['bufnr']
-        if g:PyUnitShowTests == 1
-            exec ":vs"
-            exec ":buffer " . error_buffer
-        endif
-        exec "normal ".error['lnum']."G"
-        call s:RedBar()
-        echo error_message
-    else
-        call s:GreenBar()
-        echo "All tests passed"
-    endif
-endf " }}}
-
-" --------------------------------------------------------------------------------------
-" ------------------------------- HERE's MINE AGAIN ------------------------------------
-" --------------------------------------------------------------------------------------
 
 " Keyboard mappings {{{
 
