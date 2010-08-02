@@ -11,7 +11,7 @@ def is_home_dir(path):  # {{{
 
 def is_fs_root(path):  # {{{
     return os.path.realpath(path) == "/" or \
-           (int(vim.eval("g:projroot_stop_at_home_dir")) and is_home_dir(path))
+           (int(vim.eval("g:ProjRootStopAtHomeDir")) and is_home_dir(path))
     # }}}
 
 
@@ -19,7 +19,7 @@ def find_project_root(path):  # {{{
     if not os.path.isdir(path):
         return find_project_root(os.path.dirname(os.path.realpath(path)))
 
-    indicators = vim.eval("g:projroot_indicators")
+    indicators = vim.eval("g:ProjRootIndicators")
     while not is_fs_root(path):
         for i in indicators:
             if os.path.exists(os.path.join(path, i)):
@@ -30,7 +30,7 @@ def find_project_root(path):  # {{{
 
 
 def find_source_root(path):  # {{{
-    source_root = vim.eval("g:source_root")
+    source_root = vim.eval("g:PyUnitSourceRoot")
     return os.path.join(find_project_root(path), source_root)
     # }}}
 
@@ -89,38 +89,38 @@ def _relpath(path, start='.'):  # {{{
     # }}}
 
 
-def get_relative_source_path(path):  # {{{
+def get_relative_source_path(path, allow_outside_root=False):  # {{{
     root = find_source_root(path)
-    return _relpath(path, root)
+    if allow_outside_root or os.path.realpath(path).startswith(root):
+        return _relpath(path, root)
+    else:
+        raise Exception('Path %s is not in the source root.' % path)
     # }}}
 
 
 def get_tests_root(path):  # {{{
-    loc = vim.eval("g:tests_root")
+    loc = vim.eval("g:PyUnitTestsRoot")
     return os.sep.join([find_project_root(path), loc])
     # }}}
 
 
 def add_test_prefix_to_all_path_components(path):  # {{{
-    prefix = vim.eval("g:test_prefix")
+    prefix = vim.eval("g:PyUnitTestPrefix")
     components = path.split(os.sep)
     return os.sep.join([s and prefix + s or s for s in components])
     # }}}
 
 
 def get_test_file_for_source_file(path):  # {{{
-    prefix = vim.eval("g:test_prefix")
+    prefix = vim.eval("g:PyUnitTestPrefix")
 
     relpath = get_relative_source_path(path)
     relpath = _strip_suffix(relpath, os.sep + '__init__.py', '.py')
 
-    tests_structure = vim.eval("g:tests_structure")
+    tests_structure = vim.eval("g:PyUnitTestsStructure")
     if tests_structure == "flat":
         u_relpath = relpath.replace("/", "_")
         components = [get_tests_root(path), prefix + u_relpath]
-    elif tests_structure == "side-by-side":
-        reldir, filename = os.path.split(relpath)
-        components = [reldir, prefix + filename]
     else:
         relpath = add_test_prefix_to_all_path_components(relpath)
         components = [get_tests_root(path), relpath]
@@ -131,15 +131,15 @@ def get_test_file_for_source_file(path):  # {{{
 
 def find_source_file_for_test_file(path):  # {{{
     testsroot = get_tests_root(path)
-    test_prefix = vim.eval("g:test_prefix")
+    PyUnitTestPrefix = vim.eval("g:PyUnitTestPrefix")
 
     rel_path = _relpath(path, testsroot)
     parts = rel_path.split(os.sep)
-    parts = [_strip_prefix(p, test_prefix) for p in parts]
+    parts = [_strip_prefix(p, PyUnitTestPrefix) for p in parts]
     sourcefile = os.sep.join(parts)
 
     src_root = find_source_root(path)
-    tests_structure = vim.eval("g:tests_structure")
+    tests_structure = vim.eval("g:PyUnitTestsStructure")
     if tests_structure == "flat":
         # A flat test structure makes it somewhat ambiguous to deduce the test
         # file for the given testfile.  For example, a test file called
@@ -203,18 +203,10 @@ def find_source_file_for_test_file(path):  # {{{
 
 
 def is_test_file(path):  # {{{
-    if vim.eval('g:tests_structure') == 'side-by-side':
-        # For side-by-side, test files need only to start with the
-        # prefix, their location is unimportant
-        prefix = vim.eval('g:test_prefix')
-        _, filename = os.path.split(path)
-        return filename.startswith(prefix)
-    else:
-        # For non-side-by-side tests, being in the test root means
-        # you're a test file
-        testroot = os.path.abspath(get_tests_root(path))
-        path = os.path.abspath(path)
-        return path.startswith(testroot)
+    # Being in the test root means you're a test file
+    testroot = os.path.abspath(get_tests_root(path))
+    path = os.path.abspath(path)
+    return path.startswith(testroot)
     # }}}
 
 
@@ -223,7 +215,7 @@ def _vim_split_cmd(inverted=False):  # {{{
               'right': 'left', 'bottom': 'top', 'no': 'no'}
     mapping = {'top': 'lefta', 'left': 'vert lefta',
                'right': 'vert rightb', 'bottom': 'rightb', 'no': ''}
-    splitoff_direction = vim.eval("g:tests_split_window")
+    splitoff_direction = vim.eval("g:PyUnitTestsSplitWindow")
     if inverted:
         return mapping[invert[splitoff_direction]]
     else:
@@ -232,7 +224,6 @@ def _vim_split_cmd(inverted=False):  # {{{
 
 
 def _open_buffer_cmd(path, opposite=False):  # {{{
-    path = _relpath(path, ".")
     splitopts = _vim_split_cmd(opposite)
     if not splitopts:
         splitcmd = 'edit'
@@ -248,7 +239,14 @@ def _open_buffer_cmd(path, opposite=False):  # {{{
 def switch_to_test_file_for_source_file(path):  # {{{
     testfile = get_test_file_for_source_file(path)
     testdir = os.path.dirname(testfile)
+    testfile = _relpath(testfile, '.')
     if not os.path.isfile(testfile):
+        if int(vim.eval('g:PyUnitConfirmTestCreation')):
+            # Ask the user for confirmation
+            msg = 'confirm("Test file does not exist yet. Create %s now?", "&Yes\n&No")' % testfile
+            if int(vim.eval(msg)) != 1:
+                return
+
         # Create the directory up until the file (if it doesn't exist yet)
         if not os.path.exists(testdir):
             os.makedirs(testdir)
@@ -259,12 +257,13 @@ def switch_to_test_file_for_source_file(path):  # {{{
 
 def switch_to_source_file_for_test_file(path):  # {{{
     sourcefile = find_source_file_for_test_file(path)
-    vim.command(_open_buffer_cmd(sourcefile, opposite=True))
+    relpath = _relpath(sourcefile, '.')
+    vim.command(_open_buffer_cmd(relpath, opposite=True))
     # }}}
 
 
 @bridged  # {{{
-def switch_to_alternate_file_for_file(path):
+def PyUnitSwitchToCounterpartOfFile(path):
     if is_test_file(path):
         switch_to_source_file_for_test_file(path)
     else:
@@ -273,9 +272,9 @@ def switch_to_alternate_file_for_file(path):
 
 
 @bridged  # {{{
-def run_tests_for_file(path):
+def PyUnitRunTestsForFile(path):
     if not is_test_file(path):
         path = get_test_file_for_source_file(path)
     relpath = _relpath(path, '.')
-    vim.command('call RunTestsForTestFile("%s")' % relpath)
+    vim.command('call PyUnitRunTestsForTestFile("%s")' % relpath)
     # }}}

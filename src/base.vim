@@ -19,39 +19,40 @@ endif
 let loaded_python_unittests_ftplugin = 1
 
 " Configuration of the test tool {{{
-" Set the pyunit_cmd to whatever is your testing tool (default: nosetests)
-if !exists("g:pyunit_cmd")
-    let pyunit_cmd = "nosetests -q --with-machineout"
+" Set the PyUnitCmd to whatever is your testing tool (default: nosetests)
+if !exists("g:PyUnitCmd")
+    let PyUnitCmd = "nosetests -q --with-machineout"
 endif
 
-" Set show_tests to 1 if you want to show the tests (default: 1)
-if !exists("g:show_tests")       " TODO: Use this one!
-    let show_tests = 1
+" Set PyUnitShowTests to 1 if you want to show the tests (default: 1)
+if !exists("g:PyUnitShowTests")       " TODO: Use this one!
+    let PyUnitShowTests = 1
 endif
 
 let &grepformat = "%f:%l: fail: %m,%f:%l: error: %m"
-let &grepprg = g:pyunit_cmd
+let &grepprg = g:PyUnitCmd
 "}}}
 " Configuration for autodetecting project root {{{
 " Configure what files indicate a project root
-if !exists("g:projroot_indicators")
-    let projroot_indicators = [ ".git", "setup.py", "setup.cfg" ]
+if !exists("g:ProjRootIndicators")
+    let ProjRootIndicators = [ ".git", "setup.py", "setup.cfg" ]
 endif
 
 " Scan from the current working directory up until the home dir, instead of
 " the filesystem root.  This has no effect on projects that reside outside the
 " user's home directory.  In those cases there will be scanned up until the
 " filesystem root directory.
-if !exists("g:projroot_stop_at_home_dir")
-    let projroot_stop_at_home_dir = 1
+if !exists("g:ProjRootStopAtHomeDir")
+    let ProjRootStopAtHomeDir = 1
 endif
 " }}}
 " Configuration for tests organisation {{{
 " Prefix used for all path components of the test file
-if !exists("g:test_prefix")
+if !exists("g:PyUnitTestPrefix")
     " nosetests scans all files/directories starting with "test_", so this is
-    " a sane default value.  There should not be a need to change this.
-    let test_prefix = "test_"
+    " a sane default value.  There should not be a need to change this if you
+    " want to use nose.
+    let PyUnitTestPrefix = "test_"
 endif
 
 " Location where the source files live.  When set, this must be the relative
@@ -81,27 +82,30 @@ endif
 " - tests/test_bar/
 "
 " Then you need to set this value to "src"
-if !exists("g:source_root")
-    let source_root = ""
+if !exists("g:PyUnitSourceRoot")
+    let PyUnitSourceRoot = ""
 endif
 
 " Relative location under the project root where to look for the test files.
-" Not used when tests_structure is "side-by-side".
-if !exists("g:tests_root")
-    let tests_root = "tests"
+if !exists("g:PyUnitTestsRoot")
+    let PyUnitTestsRoot = "tests"
 endif
 
-" Tests structure can be one of: flat, follow-hierarchy, side-by-side
-"let tests_structure = "flat"
-if !exists("g:tests_structure")
-    let tests_structure = "follow-hierarchy"
+" Tests structure can be one of: flat, follow-hierarchy
+"let PyUnitTestsStructure = "flat"
+if !exists("g:PyUnitTestsStructure")
+    let PyUnitTestsStructure = "follow-hierarchy"
 endif
 " }}}
 " Configuration for editing preferences {{{
-if !exists("g:tests_split_window")
+if !exists("g:PyUnitConfirmTestCreation")
+    " Set this to 0 if you want to silently create new test files
+    let PyUnitConfirmTestCreation = 1
+endif
+if !exists("g:PyUnitTestsSplitWindow")
     " Specifies how the test window should open, relative to the source file
     " window.  Takes one of the following values: top, bottom, left, right
-    let tests_split_window = "right"
+    let PyUnitTestsSplitWindow = "right"
 endif
 " }}}
 
@@ -109,12 +113,12 @@ python << endpython
 __PYTHON_SOURCE__
 endpython
 
-fun! RunTestsForTestFile(path)
+fun! PyUnitRunTestsForTestFile(path) " {{{
     silent write
-    call RunNose(a:path)
-endf
+    call PyUnitRunNose(a:path)
+endf " }}}
 
-fun! RunNose(path)
+fun! PyUnitRunNose(path) " {{{
     " TODO: fix this hard-coded "nosetests" string!
     if !executable("nosetests")
         echoerr "File " . "nosetests" . " not found. Please install it first."
@@ -135,7 +139,7 @@ fun! RunNose(path)
 
     " perform the grep itself
     let &grepformat = "%f:%l: fail: %m,%f:%l: error: %m"
-    let &grepprg = g:pyunit_cmd
+    let &grepprg = g:PyUnitCmd
     execute "silent! grep! ".a:path
 
     " restore grep settings
@@ -146,7 +150,7 @@ fun! RunNose(path)
     let has_errors=getqflist() != []
     if has_errors
         " first, open the alternate window, too
-        call SwitchToAlternateFileForCurrentFile()
+        call PyUnitSwitchToCounterpart()
         execute 'belowright copen'
         setlocal wrap
         nnoremap <buffer> <silent> c :cclose<CR>
@@ -177,44 +181,40 @@ fun! RunNose(path)
         endif
         silent cc!
     endif
-endf
+endf # }}}
 
 " -------------------------------------------------------------------------------
 " ----------------- BELOW HERE IS GARY'S CODE -----------------------------------
 " -------------------------------------------------------------------------------
 
-" Unit Test Functions {{{
-fun! s:RedBar()
+fun! s:RedBar() " {{{
     hi RedBar ctermfg=white ctermbg=red guibg=red
     echohl RedBar
     echon repeat(" ", &columns - 1)
     echohl
-endf
+endf " }}}
 
-fun! s:GreenBar()
+fun! s:GreenBar() " {{{
     hi GreenBar ctermfg=white ctermbg=green guibg=green
     echohl GreenBar
     echon repeat(" ", &columns - 1)
     echohl
-endf
-" }}}
+endf " }}}
 
-" {{{ Testing Support 
+fun! PyUnitSwitchToCounterpart() " {{{
+    call PyUnitSwitchToCounterpartOfFile(@%)
+endf " }}}
 
-fun! SwitchToAlternateFileForCurrentFile()
-    call SwitchToAlternateFileForFile(@%)
-endf
+fun! PyUnitRunTests() " {{{
+    call PyUnitRunTestsForFile(@%)
+endf " }}}
 
-fun! RunTestsForCurrentFile()
-    call RunTestsForFile(@%)
-endf
-
-fun! RunAllTests()
+fun! PyUnitRunAllTests() " {{{
     silent w
-    call RunNose('')
-endf
+    call PyUnitRunNose('')
+endf " }}}
 
-fun! JumpToError()
+fun! JumpToError() " {{{
     if getqflist() != []
         for error in getqflist()
             if error['valid']
@@ -224,7 +224,7 @@ fun! JumpToError()
         let error_message = substitute(error['text'], '^ *', '', 'g')
         " silent cc!
         let error_buffer = error['bufnr']
-        if g:show_tests == 1
+        if g:PyUnitShowTests == 1
             exec ":vs"
             exec ":buffer " . error_buffer
         endif
@@ -235,31 +235,30 @@ fun! JumpToError()
         call s:GreenBar()
         echo "All tests passed"
     endif
-endf
-" }}}
-
-" Keyboard mappings {{{
-" nnoremap <leader>m :call RunTestsForFile('-q --with-machineout')<cr>:redraw<cr>:call JumpToError()<cr>
-" nnoremap <leader>M :call RunTestsForFile('')<cr>
-" nnoremap <leader>a :call RunAllTests('-q --with-machineout')<cr>:redraw<cr>:call JumpToError()<cr>
-" nnoremap <leader>A :call RunAllTests('')<cr>
-" }}}
+endf " }}}
 
 " --------------------------------------------------------------------------------------
 " ------------------------------- HERE's MINE AGAIN ------------------------------------
 " --------------------------------------------------------------------------------------
 
-noremap <F8> :call RunTestsForCurrentFile()<CR>
-noremap! <F8> <Esc>:call RunTestsForCurrentFile()<CR>
-noremap <S-F8> :call RunAllTests()<CR>
-noremap! <S-F8> <Esc>:call RunAllTests()<CR>
-noremap <F9> :call SwitchToAlternateFileForCurrentFile()<CR>
-noremap! <F9> <Esc>:call SwitchToAlternateFileForCurrentFile()<CR>
+" Keyboard mappings {{{
 
 " Add mappings, unless the user didn't want this.
 " The default mapping is registered under to <F8> by default, unless the user
 " remapped it already (or a mapping exists already for <F8>)
 if !exists("no_plugin_maps") && !exists("no_pyunit_maps")
-    "if !hasmapto('RunTestsForCurrentFile()')
-    "endif
+    if !hasmapto('PyUnitRunTests(')
+        noremap <F8> :call PyUnitRunTests()<CR>
+        noremap! <F8> <Esc>:call PyUnitRunTests()<CR>
+    endif
+    if !hasmapto('PyUnitRunAllTests(')
+        noremap <S-F8> :call PyUnitRunAllTests()<CR>
+        noremap! <S-F8> <Esc>:call PyUnitRunAllTests()<CR>
+    endif
+    if !hasmapto('PyUnitSwitchToCounterpart(')
+        noremap <F9> :call PyUnitSwitchToCounterpart()<CR>
+        noremap! <F9> <Esc>:call PyUnitSwitchToCounterpart()<CR>
+    endif
 endif
+
+" }}}
