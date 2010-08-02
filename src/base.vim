@@ -114,12 +114,12 @@ python << endpython
 __PYTHON_SOURCE__
 endpython
 
-fun! RunTestsForTestFile(path)
+fun! RunTestsForTestFile(path) " {{{
     silent write
     call RunNose(a:path)
-endf
+endf " }}}
 
-fun! RunNose(path)
+fun! RunNose(path) " {{{
     " TODO: fix this hard-coded "nosetests" string!
     if !executable("nosetests")
         echoerr "File " . "nosetests" . " not found. Please install it first."
@@ -182,44 +182,40 @@ fun! RunNose(path)
         endif
         silent cc!
     endif
-endf
+endf # }}}
 
 " -------------------------------------------------------------------------------
 " ----------------- BELOW HERE IS GARY'S CODE -----------------------------------
 " -------------------------------------------------------------------------------
 
-" Unit Test Functions {{{
-fun! s:RedBar()
+fun! s:RedBar() " {{{
     hi RedBar ctermfg=white ctermbg=red guibg=red
     echohl RedBar
     echon repeat(" ", &columns - 1)
     echohl
-endf
+endf " }}}
 
-fun! s:GreenBar()
+fun! s:GreenBar() " {{{
     hi GreenBar ctermfg=white ctermbg=green guibg=green
     echohl GreenBar
     echon repeat(" ", &columns - 1)
     echohl
-endf
-" }}}
+endf " }}}
 
-" {{{ Testing Support 
-
-fun! SwitchToAlternateFileForCurrentFile()
+fun! SwitchToAlternateFileForCurrentFile() " {{{
     call SwitchToAlternateFileForFile(@%)
-endf
+endf " }}}
 
-fun! RunTestsForCurrentFile()
+fun! RunTestsForCurrentFile() " {{{
     call RunTestsForFile(@%)
-endf
+endf " }}}
 
-fun! RunAllTests()
+fun! RunAllTests() " {{{
     silent w
     call RunNose('')
-endf
+endf " }}}
 
-fun! JumpToError()
+fun! JumpToError() " {{{
     if getqflist() != []
         for error in getqflist()
             if error['valid']
@@ -240,26 +236,24 @@ fun! JumpToError()
         call s:GreenBar()
         echo "All tests passed"
     endif
-endf
-" }}}
+endf " }}}
+
+" --------------------------------------------------------------------------------------
+" ------------------------------- HERE's MINE AGAIN ------------------------------------
+" --------------------------------------------------------------------------------------
 
 " Keyboard mappings {{{
 " nnoremap <leader>m :call RunTestsForFile('-q --with-machineout')<cr>:redraw<cr>:call JumpToError()<cr>
 " nnoremap <leader>M :call RunTestsForFile('')<cr>
 " nnoremap <leader>a :call RunAllTests('-q --with-machineout')<cr>:redraw<cr>:call JumpToError()<cr>
 " nnoremap <leader>A :call RunAllTests('')<cr>
-" }}}
-
-" --------------------------------------------------------------------------------------
-" ------------------------------- HERE's MINE AGAIN ------------------------------------
-" --------------------------------------------------------------------------------------
-
 noremap <F8> :call RunTestsForCurrentFile()<CR>
 noremap! <F8> <Esc>:call RunTestsForCurrentFile()<CR>
 noremap <S-F8> :call RunAllTests()<CR>
 noremap! <S-F8> <Esc>:call RunAllTests()<CR>
 noremap <F9> :call SwitchToAlternateFileForCurrentFile()<CR>
 noremap! <F9> <Esc>:call SwitchToAlternateFileForCurrentFile()<CR>
+" }}}
 
 " Add mappings, unless the user didn't want this.
 " The default mapping is registered under to <F8> by default, unless the user
