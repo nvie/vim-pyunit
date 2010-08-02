@@ -179,7 +179,6 @@ fun! PyUnitRunNose(path) " {{{
         else
             echon numfail." tests failed."
         endif
-        silent cc!
     endif
 endf # }}}
 
