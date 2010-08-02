@@ -237,6 +237,9 @@ def _open_buffer_cmd(path, opposite=False):  # {{{
     return command
     # }}}
 
+def lcd_to_project_root(path):  # {{{
+    vim.command("lcd %s" % find_project_root(path))
+    # }}}
 
 def switch_to_test_file_for_source_file(path):  # {{{
     testfile = get_test_file_for_source_file(path)
@@ -253,12 +256,14 @@ def switch_to_test_file_for_source_file(path):  # {{{
             os.makedirs(testdir)
 
     vim.command(_open_buffer_cmd(testfile))
+    lcd_to_project_root(path)
     # }}}
 
 
 def switch_to_source_file_for_test_file(path):  # {{{
     sourcefile = find_source_file_for_test_file(path)
     vim.command(_open_buffer_cmd(sourcefile, opposite=True))
+    lcd_to_project_root(path)
     # }}}
 
 
