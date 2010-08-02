@@ -60,7 +60,7 @@ def _relpath(path, start='.'):  # {{{
     # Fall back onto stdlib version of it, if available
     try:
         return os.path.relpath(path, start)
-    except NameError:
+    except AttributeError:
         # Python versions below 2.6 don't have the relpath function
         # It's ok, we fall back onto our own implementation
         pass
