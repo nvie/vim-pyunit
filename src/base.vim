@@ -242,22 +242,23 @@ endf " }}}
 " --------------------------------------------------------------------------------------
 
 " Keyboard mappings {{{
-" nnoremap <leader>m :call RunTestsForFile('-q --with-machineout')<cr>:redraw<cr>:call JumpToError()<cr>
-" nnoremap <leader>M :call RunTestsForFile('')<cr>
-" nnoremap <leader>a :call PyUnitRunAllTests('-q --with-machineout')<cr>:redraw<cr>:call JumpToError()<cr>
-" nnoremap <leader>A :call PyUnitRunAllTests('')<cr>
-noremap <F8> :call PyUnitRunTests()<CR>
-noremap! <F8> <Esc>:call PyUnitRunTests()<CR>
-noremap <S-F8> :call PyUnitRunAllTests()<CR>
-noremap! <S-F8> <Esc>:call PyUnitRunAllTests()<CR>
-noremap <F9> :call PyUnitSwitchToCounterpart()<CR>
-noremap! <F9> <Esc>:call PyUnitSwitchToCounterpart()<CR>
-" }}}
 
 " Add mappings, unless the user didn't want this.
 " The default mapping is registered under to <F8> by default, unless the user
 " remapped it already (or a mapping exists already for <F8>)
 if !exists("no_plugin_maps") && !exists("no_pyunit_maps")
-    "if !hasmapto('PyUnitRunTests()')
-    "endif
+    if !hasmapto('PyUnitRunTests(')
+        noremap <F8> :call PyUnitRunTests()<CR>
+        noremap! <F8> <Esc>:call PyUnitRunTests()<CR>
+    endif
+    if !hasmapto('PyUnitRunAllTests(')
+        noremap <S-F8> :call PyUnitRunAllTests()<CR>
+        noremap! <S-F8> <Esc>:call PyUnitRunAllTests()<CR>
+    endif
+    if !hasmapto('PyUnitSwitchToCounterpart(')
+        noremap <F9> :call PyUnitSwitchToCounterpart()<CR>
+        noremap! <F9> <Esc>:call PyUnitSwitchToCounterpart()<CR>
+    endif
 endif
+
+" }}}

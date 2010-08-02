@@ -53,15 +53,36 @@ mappings:
 +==========+==================================================================+
 | F8       | Run ``nosetests`` for the current file. This mapping can be used |
 |          | on both the source file, and on its corresponding test file.     |
+|          |                                                                  |
+|          | Calls ``PyUnitRunTests()``                                       |
 +----------+------------------------------------------------------------------+
 | Shift+F8 | Run ``nosetests`` for all test files in the project, this is     |
 |          | equivalent to running ``nosetests`` in the root of your project. |
+|          |                                                                  |
+|          | Calls ``PyUnitRunAllTests()``                                    |
 +----------+------------------------------------------------------------------+
 | F9       | Switch between the source and the corresponding test file. If    |
 |          | the source or test file is not yet open, it is opened. The       |
 |          | setting ``tests_split_window`` is used to determine where the    |
 |          | file needs to be opened screen-wise.                             |
+|          |                                                                  |
+|          | Calls ``PyUnitSwitchToCounterpart()``                            |
 +----------+------------------------------------------------------------------+
+
+The plugin autodetects whether you have remapped the functions to custom
+keyboard mappings.  If so, if does not register the default mappings.  So to
+pick your own shortcut key mappings, simply add lines like this to your
+``.vimrc``::
+
+    noremap ,t :call PyUnitRunTests()<CR>
+    noremap! ,t <Esc>:call PyUnitRunTests()<CR>
+
+(Which would map the test runner to comma-T. ``<F8>`` then remains what it
+was.)
+
+If you wish to disable any automatic keyboard mapping, simply set::
+
+    let no_pyunit_maps = 1
 
 
 Configuration
