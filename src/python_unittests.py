@@ -180,7 +180,6 @@ def find_source_file_for_test_file(path):  # {{{
 
         intermediate_pairs = ['/', '_']
         last_pair = [extension, '/__init__' + extension]
-        print intermediate_pairs, last_pair
         for slashes in slashgenerator(len(parts) - 1, intermediate_pairs, \
                                last_pair):
             guess = os.path.join(src_root, "".join(interlace(parts, slashes)))
