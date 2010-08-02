@@ -89,9 +89,12 @@ def _relpath(path, start='.'):  # {{{
     # }}}
 
 
-def get_relative_source_path(path):  # {{{
+def get_relative_source_path(path, allow_outside_root=False):  # {{{
     root = find_source_root(path)
-    return _relpath(path, root)
+    if allow_outside_root or os.path.realpath(path).startswith(root):
+        return _relpath(path, root)
+    else:
+        raise Exception('Path %s is not in the source root.' % path)
     # }}}
 
 

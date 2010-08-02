@@ -84,6 +84,11 @@ class TestSomething(unittest.TestCase):
                           os.path.join(proj_root, 'src'))
         # }}}
 
+    def test_source_root_for_non_source_file(self):  # {{{
+        self.assertRaises(Exception,
+                mod.find_source_root, '/tmp/foo.py')
+        # }}}
+
     def test_vim_split_cmd(self):  # {{{
         self.assertEquals(mod._vim_split_cmd(), 'vert rightb')
         self.assertEquals(mod._vim_split_cmd(True), 'vert lefta')
