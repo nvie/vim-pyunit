@@ -51,27 +51,30 @@ def _strip_suffix(s, suffix, replace_by=''):  # {{{
     # }}}
 
 
-def _relpath(path, start='.'):  # {{{
+def _relpath(path, start='.', try_stdlib=True):  # {{{
     """Returns the relative version of the path.  This is a backport of
     Python's stdlib routine os.path.relpath(), which is not yet available in
     Python 2.4.
 
     """
     # Fall back onto stdlib version of it, if available
-    try:
-        return os.path.relpath(path, start)
-    except AttributeError:
-        # Python versions below 2.6 don't have the relpath function
-        # It's ok, we fall back onto our own implementation
-        pass
+    if try_stdlib:
+        try:
+            return os.path.relpath(path, start)
+        except AttributeError:
+            # Python versions below 2.6 don't have the relpath function
+            # It's ok, we fall back onto our own implementation
+            pass
 
     fullp = os.path.abspath(path)
     fulls = os.path.abspath(start)
-    matchs = os.path.normpath(start) + os.sep
-    print fullp
-    print fulls
+    matchs = os.path.normpath(start)
+    if not matchs.endswith(os.sep):
+        matchs += os.sep
 
-    if fullp.startswith(matchs):
+    if fullp == fulls:
+        return '.'
+    elif fullp.startswith(matchs):
         return fullp[len(matchs):]
     else:
         # Strip dirs off of fulls until it is a prefix of fullp
