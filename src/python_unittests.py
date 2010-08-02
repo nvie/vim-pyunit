@@ -11,7 +11,7 @@ def is_home_dir(path):  # {{{
 
 def is_fs_root(path):  # {{{
     return os.path.realpath(path) == "/" or \
-           (int(vim.eval("g:projroot_stop_at_home_dir")) and is_home_dir(path))
+           (int(vim.eval("g:ProjRootStopAtHomeDir")) and is_home_dir(path))
     # }}}
 
 
@@ -19,7 +19,7 @@ def find_project_root(path):  # {{{
     if not os.path.isdir(path):
         return find_project_root(os.path.dirname(os.path.realpath(path)))
 
-    indicators = vim.eval("g:projroot_indicators")
+    indicators = vim.eval("g:ProjRootIndicators")
     while not is_fs_root(path):
         for i in indicators:
             if os.path.exists(os.path.join(path, i)):
@@ -30,7 +30,7 @@ def find_project_root(path):  # {{{
 
 
 def find_source_root(path):  # {{{
-    source_root = vim.eval("g:source_root")
+    source_root = vim.eval("g:PyUnitSourceRoot")
     return os.path.join(find_project_root(path), source_root)
     # }}}
 
@@ -99,25 +99,25 @@ def get_relative_source_path(path, allow_outside_root=False):  # {{{
 
 
 def get_tests_root(path):  # {{{
-    loc = vim.eval("g:tests_root")
+    loc = vim.eval("g:PyUnitTestsRoot")
     return os.sep.join([find_project_root(path), loc])
     # }}}
 
 
 def add_test_prefix_to_all_path_components(path):  # {{{
-    prefix = vim.eval("g:test_prefix")
+    prefix = vim.eval("g:PyUnitTestPrefix")
     components = path.split(os.sep)
     return os.sep.join([s and prefix + s or s for s in components])
     # }}}
 
 
 def get_test_file_for_source_file(path):  # {{{
-    prefix = vim.eval("g:test_prefix")
+    prefix = vim.eval("g:PyUnitTestPrefix")
 
     relpath = get_relative_source_path(path)
     relpath = _strip_suffix(relpath, os.sep + '__init__.py', '.py')
 
-    tests_structure = vim.eval("g:tests_structure")
+    tests_structure = vim.eval("g:PyUnitTestsStructure")
     if tests_structure == "flat":
         u_relpath = relpath.replace("/", "_")
         components = [get_tests_root(path), prefix + u_relpath]
@@ -134,15 +134,15 @@ def get_test_file_for_source_file(path):  # {{{
 
 def find_source_file_for_test_file(path):  # {{{
     testsroot = get_tests_root(path)
-    test_prefix = vim.eval("g:test_prefix")
+    PyUnitTestPrefix = vim.eval("g:PyUnitTestPrefix")
 
     rel_path = _relpath(path, testsroot)
     parts = rel_path.split(os.sep)
-    parts = [_strip_prefix(p, test_prefix) for p in parts]
+    parts = [_strip_prefix(p, PyUnitTestPrefix) for p in parts]
     sourcefile = os.sep.join(parts)
 
     src_root = find_source_root(path)
-    tests_structure = vim.eval("g:tests_structure")
+    tests_structure = vim.eval("g:PyUnitTestsStructure")
     if tests_structure == "flat":
         # A flat test structure makes it somewhat ambiguous to deduce the test
         # file for the given testfile.  For example, a test file called
@@ -206,10 +206,10 @@ def find_source_file_for_test_file(path):  # {{{
 
 
 def is_test_file(path):  # {{{
-    if vim.eval('g:tests_structure') == 'side-by-side':
+    if vim.eval('g:PyUnitTestsStructure') == 'side-by-side':
         # For side-by-side, test files need only to start with the
         # prefix, their location is unimportant
-        prefix = vim.eval('g:test_prefix')
+        prefix = vim.eval('g:PyUnitTestPrefix')
         _, filename = os.path.split(path)
         return filename.startswith(prefix)
     else:
@@ -226,7 +226,7 @@ def _vim_split_cmd(inverted=False):  # {{{
               'right': 'left', 'bottom': 'top', 'no': 'no'}
     mapping = {'top': 'lefta', 'left': 'vert lefta',
                'right': 'vert rightb', 'bottom': 'rightb', 'no': ''}
-    splitoff_direction = vim.eval("g:tests_split_window")
+    splitoff_direction = vim.eval("g:PyUnitTestsSplitWindow")
     if inverted:
         return mapping[invert[splitoff_direction]]
     else:
@@ -252,7 +252,7 @@ def switch_to_test_file_for_source_file(path):  # {{{
     testdir = os.path.dirname(testfile)
     testfile = _relpath(testfile, '.')
     if not os.path.isfile(testfile):
-        if int(vim.eval('g:confirm_test_creation')):
+        if int(vim.eval('g:PyUnitConfirmTestCreation')):
             # Ask the user for confirmation
             msg = 'confirm("Test file does not exist yet. Create %s now?", "&Yes\n&No")' % testfile
             if int(vim.eval(msg)) != 1:

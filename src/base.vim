@@ -19,40 +19,40 @@ endif
 let loaded_python_unittests_ftplugin = 1
 
 " Configuration of the test tool {{{
-" Set the pyunit_cmd to whatever is your testing tool (default: nosetests)
-if !exists("g:pyunit_cmd")
-    let pyunit_cmd = "nosetests -q --with-machineout"
+" Set the PyUnitCmd to whatever is your testing tool (default: nosetests)
+if !exists("g:PyUnitCmd")
+    let PyUnitCmd = "nosetests -q --with-machineout"
 endif
 
-" Set show_tests to 1 if you want to show the tests (default: 1)
-if !exists("g:show_tests")       " TODO: Use this one!
-    let show_tests = 1
+" Set PyUnitShowTests to 1 if you want to show the tests (default: 1)
+if !exists("g:PyUnitShowTests")       " TODO: Use this one!
+    let PyUnitShowTests = 1
 endif
 
 let &grepformat = "%f:%l: fail: %m,%f:%l: error: %m"
-let &grepprg = g:pyunit_cmd
+let &grepprg = g:PyUnitCmd
 "}}}
 " Configuration for autodetecting project root {{{
 " Configure what files indicate a project root
-if !exists("g:projroot_indicators")
-    let projroot_indicators = [ ".git", "setup.py", "setup.cfg" ]
+if !exists("g:ProjRootIndicators")
+    let ProjRootIndicators = [ ".git", "setup.py", "setup.cfg" ]
 endif
 
 " Scan from the current working directory up until the home dir, instead of
 " the filesystem root.  This has no effect on projects that reside outside the
 " user's home directory.  In those cases there will be scanned up until the
 " filesystem root directory.
-if !exists("g:projroot_stop_at_home_dir")
-    let projroot_stop_at_home_dir = 1
+if !exists("g:ProjRootStopAtHomeDir")
+    let ProjRootStopAtHomeDir = 1
 endif
 " }}}
 " Configuration for tests organisation {{{
 " Prefix used for all path components of the test file
-if !exists("g:test_prefix")
+if !exists("g:PyUnitTestPrefix")
     " nosetests scans all files/directories starting with "test_", so this is
     " a sane default value.  There should not be a need to change this if you
     " want to use nose.
-    let test_prefix = "test_"
+    let PyUnitTestPrefix = "test_"
 endif
 
 " Location where the source files live.  When set, this must be the relative
@@ -82,31 +82,31 @@ endif
 " - tests/test_bar/
 "
 " Then you need to set this value to "src"
-if !exists("g:source_root")
-    let source_root = ""
+if !exists("g:PyUnitSourceRoot")
+    let PyUnitSourceRoot = ""
 endif
 
 " Relative location under the project root where to look for the test files.
-" Not used when tests_structure is "side-by-side".
-if !exists("g:tests_root")
-    let tests_root = "tests"
+" Not used when PyUnitTestsStructure is "side-by-side".
+if !exists("g:PyUnitTestsRoot")
+    let PyUnitTestsRoot = "tests"
 endif
 
 " Tests structure can be one of: flat, follow-hierarchy, side-by-side
-"let tests_structure = "flat"
-if !exists("g:tests_structure")
-    let tests_structure = "follow-hierarchy"
+"let PyUnitTestsStructure = "flat"
+if !exists("g:PyUnitTestsStructure")
+    let PyUnitTestsStructure = "follow-hierarchy"
 endif
 " }}}
 " Configuration for editing preferences {{{
-if !exists("g:confirm_test_creation")
+if !exists("g:PyUnitConfirmTestCreation")
     " Set this to 0 if you want to silently create new test files
-    let confirm_test_creation = 1
+    let PyUnitConfirmTestCreation = 1
 endif
-if !exists("g:tests_split_window")
+if !exists("g:PyUnitTestsSplitWindow")
     " Specifies how the test window should open, relative to the source file
     " window.  Takes one of the following values: top, bottom, left, right
-    let tests_split_window = "right"
+    let PyUnitTestsSplitWindow = "right"
 endif
 " }}}
 
@@ -140,7 +140,7 @@ fun! RunNose(path) " {{{
 
     " perform the grep itself
     let &grepformat = "%f:%l: fail: %m,%f:%l: error: %m"
-    let &grepprg = g:pyunit_cmd
+    let &grepprg = g:PyUnitCmd
     execute "silent! grep! ".a:path
 
     " restore grep settings
@@ -225,7 +225,7 @@ fun! JumpToError() " {{{
         let error_message = substitute(error['text'], '^ *', '', 'g')
         " silent cc!
         let error_buffer = error['bufnr']
-        if g:show_tests == 1
+        if g:PyUnitShowTests == 1
             exec ":vs"
             exec ":buffer " . error_buffer
         endif

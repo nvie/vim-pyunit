@@ -71,33 +71,33 @@ The plugin supports setting of the following variables:
 +-------------------------------+------------------------------------------------+------------------------------+---------------------------------------+
 | Variable                      | Description                                    | Values                       | Default                               |
 +===============================+================================================+==============================+=======================================+
-| ``show_tests``                | Shows the tests.                               | 0 or 1                       | ``1``                                 |
+| ``PyUnitShowTests``           | Shows the tests.                               | 0 or 1                       | ``1``                                 |
 +-------------------------------+------------------------------------------------+------------------------------+---------------------------------------+
-| ``pyunit_cmd``                | The command to run the unit test.              | any string                   | ``"nosetests -q --with-machineout"``  |
+| ``PyUnitCmd``                 | The command to run the unit test.              | any string                   | ``"nosetests -q --with-machineout"``  |
 +-------------------------------+------------------------------------------------+------------------------------+---------------------------------------+
-| ``projroot_indicators``       | List of filenames indicating the               | list of file names           | ``[".git", "setup.py", "setup.cfg"]`` |
+| ``ProjRootIndicators``        | List of filenames indicating the               | list of file names           | ``[".git", "setup.py", "setup.cfg"]`` |
 |                               | project root.                                  |                              |                                       |
 +-------------------------------+------------------------------------------------+------------------------------+---------------------------------------+
-| ``projroot_stop_at_home_dir`` | Stop the search for the project root at the    | 0 or 1                       | ``1``                                 |
+| ``ProjRootStopAtHomeDir``     | Stop the search for the project root at the    | 0 or 1                       | ``1``                                 |
 |                               | user's home dir.                               |                              |                                       |
 +-------------------------------+------------------------------------------------+------------------------------+---------------------------------------+
-| ``test_prefix``               | The filename prefix to use for test files.     | any string                   | ``"test_"``                           |
+| ``PyUnitTestPrefix``          | The filename prefix to use for test files.     | any string                   | ``"test_"``                           |
 +-------------------------------+------------------------------------------------+------------------------------+---------------------------------------+
-| ``test_suffix``               | *Not implemented yet*                          | 0 or 1                       | n/a                                   |
+| ``PyUnitTestSuffix``          | *Not implemented yet*                          | 0 or 1                       | n/a                                   |
 +-------------------------------+------------------------------------------------+------------------------------+---------------------------------------+
-| ``source_root``               | The relative location where all source files   | directory spec, or empty     | ``""``                                |
+| ``PyUnitSourceRoot``          | The relative location where all source files   | directory spec, or empty     | ``""``                                |
 |                               | live.                                          |                              |                                       |
 +-------------------------------+------------------------------------------------+------------------------------+---------------------------------------+
-| ``tests_root``                | The relative location where all tests live.    | directory spec               | ``"tests"``                           |
+| ``PyUnitTestRoot``            | The relative location where all tests live.    | directory spec               | ``"tests"``                           |
 +-------------------------------+------------------------------------------------+------------------------------+---------------------------------------+
-| ``tests_structure``           | Specifies how you wish to organise your tests. | flat, follow-hierarchy       | ``"follow-hierarchy"``                |
+| ``PyUnitTestStructure``       | Specifies how you wish to organise your tests. | flat, follow-hierarchy       | ``"follow-hierarchy"``                |
 +-------------------------------+------------------------------------------------+------------------------------+---------------------------------------+
-| ``tests_split_window``        | Specifies where test files should be opened,   | left, right, top, bottom, no | ``"right"``                           |
+| ``PyUnitTestsSplitWindow``    | Specifies where test files should be opened,   | left, right, top, bottom, no | ``"right"``                           |
 |                               | when oopened next to the source file. When set |                              |                                       |
 |                               | to ``no``, doesn't open a new window at all,   |                              |                                       |
 |                               | but reuses the current buffer.                 |                              |                                       |
 +-------------------------------+------------------------------------------------+------------------------------+---------------------------------------+
-| ``confirm_test_creation``     | Ask to confirm creation of new test files.     | 0 or 1                       | ``1``                                 |
+| ``PyUnitConfirmTestCreation`` | Ask to confirm creation of new test files.     | 0 or 1                       | ``1``                                 |
 +-------------------------------+------------------------------------------------+------------------------------+---------------------------------------+
 
 
