@@ -241,7 +241,6 @@ def _open_buffer_cmd(path, opposite=False):  # {{{
 def switch_to_test_file_for_source_file(path):  # {{{
     testfile = get_test_file_for_source_file(path)
     testdir = os.path.dirname(testfile)
-    testfile = _relpath(testfile, '.')
     if not os.path.isfile(testfile):
         if int(vim.eval('g:PyUnitConfirmTestCreation')):
             # Ask the user for confirmation
@@ -259,8 +258,7 @@ def switch_to_test_file_for_source_file(path):  # {{{
 
 def switch_to_source_file_for_test_file(path):  # {{{
     sourcefile = find_source_file_for_test_file(path)
-    relpath = _relpath(sourcefile, '.')
-    vim.command(_open_buffer_cmd(relpath, opposite=True))
+    vim.command(_open_buffer_cmd(sourcefile, opposite=True))
     # }}}
 
 
