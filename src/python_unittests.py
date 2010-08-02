@@ -237,9 +237,11 @@ def _open_buffer_cmd(path, opposite=False):  # {{{
     return command
     # }}}
 
+
 def lcd_to_project_root(path):  # {{{
     vim.command("lcd %s" % find_project_root(path))
     # }}}
+
 
 def switch_to_test_file_for_source_file(path):  # {{{
     testfile = get_test_file_for_source_file(path)
@@ -247,7 +249,8 @@ def switch_to_test_file_for_source_file(path):  # {{{
     if not os.path.isfile(testfile):
         if int(vim.eval('g:PyUnitConfirmTestCreation')):
             # Ask the user for confirmation
-            msg = 'confirm("Test file does not exist yet. Create %s now?", "&Yes\n&No")' % testfile
+            rel_testfile = _relpath(testfile, find_project_root(path))
+            msg = 'confirm("Test file does not exist yet. Create %s now?", "&Yes\n&No")' % rel_testfile
             if int(vim.eval(msg)) != 1:
                 return
 
