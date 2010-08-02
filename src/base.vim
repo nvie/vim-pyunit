@@ -113,12 +113,12 @@ python << endpython
 __PYTHON_SOURCE__
 endpython
 
-fun! RunTestsForTestFile(path) " {{{
+fun! PyUnitRunTestsForTestFile(path) " {{{
     silent write
-    call RunNose(a:path)
+    call PyUnitRunNose(a:path)
 endf " }}}
 
-fun! RunNose(path) " {{{
+fun! PyUnitRunNose(path) " {{{
     " TODO: fix this hard-coded "nosetests" string!
     if !executable("nosetests")
         echoerr "File " . "nosetests" . " not found. Please install it first."
@@ -150,7 +150,7 @@ fun! RunNose(path) " {{{
     let has_errors=getqflist() != []
     if has_errors
         " first, open the alternate window, too
-        call SwitchToAlternateFileForCurrentFile()
+        call PyUnitSwitchToCounterpart()
         execute 'belowright copen'
         setlocal wrap
         nnoremap <buffer> <silent> c :cclose<CR>
@@ -201,17 +201,17 @@ fun! s:GreenBar() " {{{
     echohl
 endf " }}}
 
-fun! SwitchToAlternateFileForCurrentFile() " {{{
-    call SwitchToAlternateFileForFile(@%)
+fun! PyUnitSwitchToCounterpart() " {{{
+    call PyUnitSwitchToCounterpartOfFile(@%)
 endf " }}}
 
-fun! RunTestsForCurrentFile() " {{{
-    call RunTestsForFile(@%)
+fun! PyUnitRunTests() " {{{
+    call PyUnitRunTestsForFile(@%)
 endf " }}}
 
-fun! RunAllTests() " {{{
+fun! PyUnitRunAllTests() " {{{
     silent w
-    call RunNose('')
+    call PyUnitRunNose('')
 endf " }}}
 
 fun! JumpToError() " {{{
@@ -244,20 +244,20 @@ endf " }}}
 " Keyboard mappings {{{
 " nnoremap <leader>m :call RunTestsForFile('-q --with-machineout')<cr>:redraw<cr>:call JumpToError()<cr>
 " nnoremap <leader>M :call RunTestsForFile('')<cr>
-" nnoremap <leader>a :call RunAllTests('-q --with-machineout')<cr>:redraw<cr>:call JumpToError()<cr>
-" nnoremap <leader>A :call RunAllTests('')<cr>
-noremap <F8> :call RunTestsForCurrentFile()<CR>
-noremap! <F8> <Esc>:call RunTestsForCurrentFile()<CR>
-noremap <S-F8> :call RunAllTests()<CR>
-noremap! <S-F8> <Esc>:call RunAllTests()<CR>
-noremap <F9> :call SwitchToAlternateFileForCurrentFile()<CR>
-noremap! <F9> <Esc>:call SwitchToAlternateFileForCurrentFile()<CR>
+" nnoremap <leader>a :call PyUnitRunAllTests('-q --with-machineout')<cr>:redraw<cr>:call JumpToError()<cr>
+" nnoremap <leader>A :call PyUnitRunAllTests('')<cr>
+noremap <F8> :call PyUnitRunTests()<CR>
+noremap! <F8> <Esc>:call PyUnitRunTests()<CR>
+noremap <S-F8> :call PyUnitRunAllTests()<CR>
+noremap! <S-F8> <Esc>:call PyUnitRunAllTests()<CR>
+noremap <F9> :call PyUnitSwitchToCounterpart()<CR>
+noremap! <F9> <Esc>:call PyUnitSwitchToCounterpart()<CR>
 " }}}
 
 " Add mappings, unless the user didn't want this.
 " The default mapping is registered under to <F8> by default, unless the user
 " remapped it already (or a mapping exists already for <F8>)
 if !exists("no_plugin_maps") && !exists("no_pyunit_maps")
-    "if !hasmapto('RunTestsForCurrentFile()')
+    "if !hasmapto('PyUnitRunTests()')
     "endif
 endif

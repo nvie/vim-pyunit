@@ -263,7 +263,7 @@ def switch_to_source_file_for_test_file(path):  # {{{
 
 
 @bridged  # {{{
-def switch_to_alternate_file_for_file(path):
+def PyUnitSwitchToCounterpartOfFile(path):
     if is_test_file(path):
         switch_to_source_file_for_test_file(path)
     else:
@@ -272,9 +272,9 @@ def switch_to_alternate_file_for_file(path):
 
 
 @bridged  # {{{
-def run_tests_for_file(path):
+def PyUnitRunTestsForFile(path):
     if not is_test_file(path):
         path = get_test_file_for_source_file(path)
     relpath = _relpath(path, '.')
-    vim.command('call RunTestsForTestFile("%s")' % relpath)
+    vim.command('call PyUnitRunTestsForTestFile("%s")' % relpath)
     # }}}
