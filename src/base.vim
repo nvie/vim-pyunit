@@ -29,8 +29,6 @@ if !exists("g:PyUnitShowTests")       " TODO: Use this one!
     let PyUnitShowTests = 1
 endif
 
-let &grepformat = "%f:%l: fail: %m,%f:%l: error: %m"
-let &grepprg = g:PyUnitCmd
 "}}}
 " Configuration for autodetecting project root {{{
 " Configure what files indicate a project root
