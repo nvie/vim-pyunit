@@ -137,7 +137,11 @@ fun! PyUnitRunNose(path) " {{{
 
     " perform the grep itself
     let &grepformat = "%f:%l: fail: %m,%f:%l: error: %m"
-    let &grepprg = g:PyUnitCmd
+    if g:PyUnitSourceRoot != ""
+        let &grepprg = "PYTHONPATH=".g:PyUnitSourceRoot." ".g:PyUnitCmd
+    else
+        let &grepprg = g:PyUnitCmd
+    endif
     execute "silent! grep! ".a:path
 
     " restore grep settings
