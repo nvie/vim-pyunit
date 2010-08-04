@@ -218,16 +218,16 @@ endf " }}}
 " remapped it already (or a mapping exists already for <F8>)
 if !exists("no_plugin_maps") && !exists("no_pyunit_maps")
     if !hasmapto('PyUnitRunTests(')
-        noremap <F8> :call PyUnitRunTests()<CR>
-        noremap! <F8> <Esc>:call PyUnitRunTests()<CR>
+        noremap <silent> <F8> :call PyUnitRunTests()<CR>
+        noremap! <silent> <F8> <Esc>:call PyUnitRunTests()<CR>
     endif
     if !hasmapto('PyUnitRunAllTests(')
-        noremap <S-F8> :call PyUnitRunAllTests()<CR>
-        noremap! <S-F8> <Esc>:call PyUnitRunAllTests()<CR>
+        noremap <silent> <S-F8> :call PyUnitRunAllTests()<CR>
+        noremap! <silent> <S-F8> <Esc>:call PyUnitRunAllTests()<CR>
     endif
     if !hasmapto('PyUnitSwitchToCounterpart(')
-        noremap <F9> :call PyUnitSwitchToCounterpart()<CR>
-        noremap! <F9> <Esc>:call PyUnitSwitchToCounterpart()<CR>
+        noremap <silent> <F9> :call PyUnitSwitchToCounterpart()<CR>
+        noremap! <silent> <F9> <Esc>:call PyUnitSwitchToCounterpart()<CR>
     endif
 endif
 
