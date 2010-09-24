@@ -123,9 +123,20 @@ class TestLayout(object):
 
     # Helper methods, to be used in subclasses
     def break_down(self, path):
-        return path.split(os.sep)
+        parts = path.split(os.sep)
+        try:
+            parts.remove("__init__.py")
+        except ValueError:
+            pass
+        if len(parts) > 0 and parts[-1].endswith(".py"):
+            parts[-1] = parts[-1][:-len(".py")]
+        return parts
 
-    def glue_parts(self, parts):
+    def glue_parts(self, parts, use_under_under_init=False):
+        if use_under_under_init:
+            parts.append("__init__.py")
+        else:
+            parts[-1] = parts[-1] + ".py"
         return os.sep.join(parts)
 
 
@@ -136,8 +147,14 @@ class TestLayout(object):
     def get_test_file(self, source_file):
         raise NotImplemented("Implement this method in a subclass.")
 
-    def get_source_file(self, test_file):
+    def get_source_candidates(self, test_file):
         raise NotImplemented("Implement this method in a subclass.")
+
+    def get_source_file(self, test_file):
+        for candidate in self.get_source_file_candidates(test_file):
+            if os.path.exists(candidate):
+                return candidate
+        raise RuntimeError("Source file not found.")
 
 
 class SideBySideLayout(TestLayout):
@@ -151,13 +168,39 @@ class SideBySideLayout(TestLayout):
         parts[-1] = self.prefix + parts[-1]
         return self.glue_parts(parts)
 
-    def get_source_file(self, test_file):
+    def get_source_candidates(self, test_file):
         parts = self.break_down(test_file)
         filepart = parts[-1]
         if not filepart.startswith(self.prefix):
             raise RuntimeError("Not a test file.")
         parts[-1] = filepart[len(self.prefix):]
+        return [self.glue_parts(parts)]
+
+
+class FollowHierarchyLayout(TestLayout):
+    def is_test_file(self, some_file):
+        if not some_file.startswith(self.test_root):
+            return False
+
+        some_file = _relpath(some_file, self.test_root)
+
+        parts = self.break_down(some_file)
+        for p in parts:
+            if not p.startswith(self.prefix):
+                return False
+        return True
+
+    def get_test_file(self, source_file):
+        if not source_file.startswith(self.source_root):
+            raise RuntimeError("This file is not under the source root.")
+
+        source_file = _relpath(source_file, self.source_root)
+        parts = self.break_down(source_file)
+        parts = map(lambda p: self.prefix + p, parts)
+        parts = [self.test_root] + parts
         return self.glue_parts(parts)
+
+    #def get_source_candidates(self, test_file):
 
 
 def is_home_dir(path):

@@ -191,58 +191,144 @@ class TestSomething(FileAwareTestCase):
                 'edit foo')
 
 
+class TestTestLayout(FileAwareTestCase):
+    def testBreakDownSimple(self):
+        layout = mod.TestLayout('src', 'tests')
+        self.assertEquals(layout.break_down('foo.py'), ['foo'])
+        self.assertEquals(layout.break_down('foo/bar.py'), ['foo', 'bar'])
+        self.assertEquals(layout.break_down('foo/bar/baz.py'), ['foo', 'bar', 'baz'])
+
+    def testBreakDownWithUnderUnderInits(self):
+        layout = mod.TestLayout('src', 'tests')
+        self.assertEquals(layout.break_down('__init__.py'), [])
+        self.assertEquals(layout.break_down('foo/__init__.py'), ['foo'])
+        self.assertEquals(layout.break_down('foo/bar/baz/__init__.py'), ['foo', 'bar', 'baz'])
+
+    def testGlueSimple(self):
+        layout = mod.TestLayout('src', 'tests')
+        self.assertEquals(layout.glue_parts(['foo']), 'foo.py')
+        self.assertEquals(layout.glue_parts(['foo', 'bar', 'baz']), 'foo/bar/baz.py')
+        self.assertRaises(IndexError, layout.glue_parts, [])
+
+    def testGlueWithUnderUnderInits(self):
+        layout = mod.TestLayout('src', 'tests')
+        self.assertEquals(layout.glue_parts(['foo'], True), 'foo/__init__.py')
+        self.assertEquals(layout.glue_parts(['foo', 'bar', 'baz'], True), 'foo/bar/baz/__init__.py')
+        self.assertEquals(layout.glue_parts([], True), '__init__.py')
+
+
 class TestSideBySideLayout(FileAwareTestCase):
     def setUp(self):
         setUpVimEnvironment()
 
     def testDetectTestFile(self):
-        sbs = mod.SideBySideLayout('src', 'tests')
-        self.assertTrue(sbs.is_test_file('test_foo.py'))
-        self.assertTrue(sbs.is_test_file('foo/test_bar.py'))
-        self.assertTrue(sbs.is_test_file('tests/foo/test_bar.py'))
-        self.assertTrue(sbs.is_test_file('test_foo/test_bar.py'))
-        self.assertFalse(sbs.is_test_file('foo.py'))
-        self.assertFalse(sbs.is_test_file('src/foo.py'))
-        self.assertFalse(sbs.is_test_file('src/foo/bar.py'))
+        layout = mod.SideBySideLayout('src', 'tests')
+        self.assertTrue(layout.is_test_file('test_foo.py'))
+        self.assertTrue(layout.is_test_file('foo/test_bar.py'))
+        self.assertTrue(layout.is_test_file('tests/foo/test_bar.py'))
+        self.assertTrue(layout.is_test_file('test_foo/test_bar.py'))
+        self.assertFalse(layout.is_test_file('foo.py'))
+        self.assertFalse(layout.is_test_file('src/foo.py'))
+        self.assertFalse(layout.is_test_file('src/foo/bar.py'))
 
     def testDetectTestFileWithAlternatePrefix(self):
         vimvar['g:PyUnitTestPrefix'] = '_'
-        sbs = mod.SideBySideLayout('src', 'tests')
-        self.assertTrue(sbs.is_test_file('_foo.py'))
-        self.assertTrue(sbs.is_test_file('foo/_bar.py'))
-        self.assertTrue(sbs.is_test_file('tests/foo/_bar.py'))
-        self.assertTrue(sbs.is_test_file('test_foo/_bar.py'))
-        self.assertFalse(sbs.is_test_file('foo.py'))
-        self.assertFalse(sbs.is_test_file('src/foo.py'))
-        self.assertFalse(sbs.is_test_file('src/foo/bar.py'))
+        layout = mod.SideBySideLayout('src', 'tests')
+        self.assertTrue(layout.is_test_file('_foo.py'))
+        self.assertTrue(layout.is_test_file('foo/_bar.py'))
+        self.assertTrue(layout.is_test_file('tests/foo/_bar.py'))
+        self.assertTrue(layout.is_test_file('test_foo/_bar.py'))
+        self.assertFalse(layout.is_test_file('foo.py'))
+        self.assertFalse(layout.is_test_file('src/foo.py'))
+        self.assertFalse(layout.is_test_file('src/foo/bar.py'))
 
     def testSourceToTest(self):
-        sbs = mod.SideBySideLayout('src', 'tests')
-        self.assertEquals(sbs.get_test_file('src/foo.py'), 'src/test_foo.py')
-        self.assertEquals(sbs.get_test_file('src/bar.py'), 'src/test_bar.py')
-        self.assertEquals(sbs.get_test_file('src/bar/baz.py'), 'src/bar/test_baz.py')
-        self.assertEquals(sbs.get_test_file('foo.py'), 'test_foo.py')
+        layout = mod.SideBySideLayout('src', 'tests')
+        self.assertEquals(layout.get_test_file('src/foo.py'), 'src/test_foo.py')
+        self.assertEquals(layout.get_test_file('src/bar.py'), 'src/test_bar.py')
+        self.assertEquals(layout.get_test_file('src/bar/baz.py'), 'src/bar/test_baz.py')
+        self.assertEquals(layout.get_test_file('foo.py'), 'test_foo.py')
 
     def testSourceToTestWithAlternatePrefix(self):
         vimvar['g:PyUnitTestPrefix'] = '_'
-        sbs = mod.SideBySideLayout('src', 'tests')
-        self.assertEquals(sbs.get_test_file('src/foo.py'), 'src/_foo.py')
-        self.assertEquals(sbs.get_test_file('src/bar.py'), 'src/_bar.py')
-        self.assertEquals(sbs.get_test_file('src/bar/baz.py'), 'src/bar/_baz.py')
-        self.assertEquals(sbs.get_test_file('foo.py'), '_foo.py')
+        layout = mod.SideBySideLayout('src', 'tests')
+        self.assertEquals(layout.get_test_file('src/foo.py'), 'src/_foo.py')
+        self.assertEquals(layout.get_test_file('src/bar.py'), 'src/_bar.py')
+        self.assertEquals(layout.get_test_file('src/bar/baz.py'), 'src/bar/_baz.py')
+        self.assertEquals(layout.get_test_file('foo.py'), '_foo.py')
 
     def testTestToSource(self):
-        sbs = mod.SideBySideLayout('src', 'tests')
-        self.assertEquals(sbs.get_source_file('src/test_foo.py'), 'src/foo.py')
-        self.assertEquals(sbs.get_source_file('src/test_bar.py'), 'src/bar.py')
-        self.assertEquals(sbs.get_source_file('src/bar/test_baz.py'), 'src/bar/baz.py')
-        self.assertEquals(sbs.get_source_file('test_foo.py'), 'foo.py')
+        layout = mod.SideBySideLayout('src', 'tests')
+        self.assertEquals(layout.get_source_candidates('src/test_foo.py'), ['src/foo.py'])
+        self.assertEquals(layout.get_source_candidates('src/test_bar.py'), ['src/bar.py'])
+        self.assertEquals(layout.get_source_candidates('src/bar/test_baz.py'), ['src/bar/baz.py'])
+        self.assertEquals(layout.get_source_candidates('test_foo.py'), ['foo.py'])
 
     def testTestToSourceWithAlternatePrefix(self):
         vimvar['g:PyUnitTestPrefix'] = '_'
-        sbs = mod.SideBySideLayout('src', 'tests')
-        self.assertEquals(sbs.get_source_file('src/_foo.py'), 'src/foo.py')
-        self.assertEquals(sbs.get_source_file('src/_bar.py'), 'src/bar.py')
-        self.assertEquals(sbs.get_source_file('src/bar/_baz.py'), 'src/bar/baz.py')
-        self.assertEquals(sbs.get_source_file('_foo.py'), 'foo.py')
+        layout = mod.SideBySideLayout('src', 'tests')
+        self.assertEquals(layout.get_source_candidates('src/_foo.py'), ['src/foo.py'])
+        self.assertEquals(layout.get_source_candidates('src/_bar.py'), ['src/bar.py'])
+        self.assertEquals(layout.get_source_candidates('src/bar/_baz.py'), ['src/bar/baz.py'])
+        self.assertEquals(layout.get_source_candidates('_foo.py'), ['foo.py'])
+
+
+class TestFollowHierarcyLayout(FileAwareTestCase):
+    def setUp(self):
+        setUpVimEnvironment()
+
+    def testDetectTestFile(self):
+        layout = mod.FollowHierarchyLayout('src', 'tests')
+        self.assertTrue(layout.is_test_file('tests/test_foo.py'))
+        self.assertTrue(layout.is_test_file('tests/test_foo/test_bar.py'))
+        self.assertFalse(layout.is_test_file('foo.py'))
+        self.assertFalse(layout.is_test_file('test_foo/test_bar.py'))
+        self.assertFalse(layout.is_test_file('tests/foo/test_bar.py'))
+        self.assertFalse(layout.is_test_file('src/foo.py'))
+        self.assertFalse(layout.is_test_file('src/foo/bar.py'))
+
+    def testDetectTestFileWithAlternatePrefix(self):
+        vimvar['g:PyUnitTestPrefix'] = '_'
+        layout = mod.FollowHierarchyLayout('src', 'my_tests')
+        self.assertTrue(layout.is_test_file('my_tests/_foo.py'))
+        self.assertTrue(layout.is_test_file('my_tests/_foo/_bar.py'))
+        self.assertFalse(layout.is_test_file('foo.py'))
+        self.assertFalse(layout.is_test_file('_foo/_bar.py'))
+        self.assertFalse(layout.is_test_file('my_tests/foo/_bar.py'))
+        self.assertFalse(layout.is_test_file('src/foo.py'))
+        self.assertFalse(layout.is_test_file('src/foo/bar.py'))
+
+    def testSourceToTestFailsForNonSourceFiles(self):
+        layout = mod.FollowHierarchyLayout('src', 'tests')
+        self.assertRaises(RuntimeError, layout.get_test_file, 'nonsrc/foo.py')
+        self.assertRaises(RuntimeError, layout.get_test_file, 'foo.py')
+        #self.assertRaises(RuntimeError, layout.get_test_file, 'src.py')
+
+    def testSourceToTest(self):
+        layout = mod.FollowHierarchyLayout('src', 'tests')
+        self.assertEquals(layout.get_test_file('src/foo.py'), 'tests/test_foo.py')
+        self.assertEquals(layout.get_test_file('src/bar.py'), 'tests/test_bar.py')
+        self.assertEquals(layout.get_test_file('src/bar/baz.py'), 'tests/test_bar/test_baz.py')
+
+    def testSourceToTestWithAlternatePrefix(self):
+        vimvar['g:PyUnitTestPrefix'] = '_'
+        layout = mod.FollowHierarchyLayout('src', 'tests')
+        self.assertEquals(layout.get_test_file('src/foo.py'), 'tests/_foo.py')
+        self.assertEquals(layout.get_test_file('src/bar.py'), 'tests/_bar.py')
+        self.assertEquals(layout.get_test_file('src/bar/baz.py'), 'tests/_bar/_baz.py')
+
+    #def testTestToSource(self):
+        #layout = mod.FollowHierarchyLayout('src', 'tests')
+        #self.assertEquals(layout.get_source_candidates('src/test_foo.py'), ['src/foo.py'])
+        #self.assertEquals(layout.get_source_candidates('src/test_bar.py'), ['src/bar.py'])
+        #self.assertEquals(layout.get_source_candidates('src/bar/test_baz.py'), ['src/bar/baz.py'])
+        #self.assertEquals(layout.get_source_candidates('test_foo.py'), ['foo.py'])
+
+    #def testTestToSourceWithAlternatePrefix(self):
+        #vimvar['g:PyUnitTestPrefix'] = '_'
+        #layout = mod.FollowHierarchyLayout('src', 'tests')
+        #self.assertEquals(layout.get_source_candidates('src/_foo.py'), ['src/foo.py'])
+        #self.assertEquals(layout.get_source_candidates('src/_bar.py'), ['src/bar.py'])
+        #self.assertEquals(layout.get_source_candidates('src/bar/_baz.py'), ['src/bar/baz.py'])
+        #self.assertEquals(layout.get_source_candidates('_foo.py'), ['foo.py'])
 
