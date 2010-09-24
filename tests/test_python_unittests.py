@@ -54,6 +54,7 @@ class TestSomething(unittest.TestCase):
 
     # }}}
 
+
     def test_is_test_file(self):  # {{{
         self.assertTrue(mod.is_test_file('tests/foo.py'))
 
