@@ -24,34 +24,31 @@ proj_root = os.getcwd()
 currfile = __file__.replace('.pyc', '.py')
 
 
-class TestSomething(unittest.TestCase):
+def setUpVimEnvironment():
+    vimvar.clear()
+    vimvar.update({
+        'g:PyUnitShowTests': '1',
+        'g:PyUnitCmd': 'nosetests -q --with-machineout',
+        'g:PyUnitTestPrefix': 'test_',
+        'g:ProjRootIndicators': ['.git', 'setup.py', 'setup.cfg'],
+        'g:ProjRootStopAtHomeDir': '1',
+        'g:PyUnitTestsStructure': 'follow-hierarchy',
+        'g:PyUnitTestsRoot': 'tests',
+        'g:PyUnitSourceRoot': '',
+        'g:PyUnitTestsSplitWindow': 'right',
+    })
 
+class FileAwareTestCase(unittest.TestCase):
     def assertSameFile(self, x, y):
         self.assertEquals(os.path.realpath(x), os.path.realpath(y))
 
-    # Prepare testing environment {{{
-
+class TestSomething(FileAwareTestCase):
     def setUp(self):
-        # Start with a fresh vim environment
-        vimvar.clear()
-
-        # Set the project defaults
-        vimvar.update({
-            'g:PyUnitShowTests': '1',
-            'g:PyUnitCmd': 'nosetests -q --with-machineout',
-            'g:PyUnitTestPrefix': 'test_',
-            'g:ProjRootIndicators': ['.git', 'setup.py', 'setup.cfg'],
-            'g:ProjRootStopAtHomeDir': '1',
-            'g:PyUnitTestsStructure': 'follow-hierarchy',
-            'g:PyUnitTestsRoot': 'tests',
-            'g:PyUnitSourceRoot': '',
-            'g:PyUnitTestsSplitWindow': 'right',
-        })
+        setUpVimEnvironment()
 
     def test_patch(self):
         self.assertEquals(vim.eval('g:PyUnitTestPrefix'), 'test_')
         self.assertEquals(vim.eval('g:PyUnitShowTests'), '1')
-
 
 
     def test_is_fs_root(self):
@@ -192,3 +189,60 @@ class TestSomething(unittest.TestCase):
         vimvar['g:PyUnitTestsSplitWindow'] = 'no'
         self.assertEquals(mod._open_buffer_cmd('foo'),
                 'edit foo')
+
+
+class TestSideBySideLayout(FileAwareTestCase):
+    def setUp(self):
+        setUpVimEnvironment()
+
+    def testDetectTestFile(self):
+        sbs = mod.SideBySideLayout('src', 'tests')
+        self.assertTrue(sbs.is_test_file('test_foo.py'))
+        self.assertTrue(sbs.is_test_file('foo/test_bar.py'))
+        self.assertTrue(sbs.is_test_file('tests/foo/test_bar.py'))
+        self.assertTrue(sbs.is_test_file('test_foo/test_bar.py'))
+        self.assertFalse(sbs.is_test_file('foo.py'))
+        self.assertFalse(sbs.is_test_file('src/foo.py'))
+        self.assertFalse(sbs.is_test_file('src/foo/bar.py'))
+
+    def testDetectTestFileWithAlternatePrefix(self):
+        vimvar['g:PyUnitTestPrefix'] = '_'
+        sbs = mod.SideBySideLayout('src', 'tests')
+        self.assertTrue(sbs.is_test_file('_foo.py'))
+        self.assertTrue(sbs.is_test_file('foo/_bar.py'))
+        self.assertTrue(sbs.is_test_file('tests/foo/_bar.py'))
+        self.assertTrue(sbs.is_test_file('test_foo/_bar.py'))
+        self.assertFalse(sbs.is_test_file('foo.py'))
+        self.assertFalse(sbs.is_test_file('src/foo.py'))
+        self.assertFalse(sbs.is_test_file('src/foo/bar.py'))
+
+    def testSourceToTest(self):
+        sbs = mod.SideBySideLayout('src', 'tests')
+        self.assertEquals(sbs.get_test_file('src/foo.py'), 'src/test_foo.py')
+        self.assertEquals(sbs.get_test_file('src/bar.py'), 'src/test_bar.py')
+        self.assertEquals(sbs.get_test_file('src/bar/baz.py'), 'src/bar/test_baz.py')
+        self.assertEquals(sbs.get_test_file('foo.py'), 'test_foo.py')
+
+    def testSourceToTestWithAlternatePrefix(self):
+        vimvar['g:PyUnitTestPrefix'] = '_'
+        sbs = mod.SideBySideLayout('src', 'tests')
+        self.assertEquals(sbs.get_test_file('src/foo.py'), 'src/_foo.py')
+        self.assertEquals(sbs.get_test_file('src/bar.py'), 'src/_bar.py')
+        self.assertEquals(sbs.get_test_file('src/bar/baz.py'), 'src/bar/_baz.py')
+        self.assertEquals(sbs.get_test_file('foo.py'), '_foo.py')
+
+    def testTestToSource(self):
+        sbs = mod.SideBySideLayout('src', 'tests')
+        self.assertEquals(sbs.get_source_file('src/test_foo.py'), 'src/foo.py')
+        self.assertEquals(sbs.get_source_file('src/test_bar.py'), 'src/bar.py')
+        self.assertEquals(sbs.get_source_file('src/bar/test_baz.py'), 'src/bar/baz.py')
+        self.assertEquals(sbs.get_source_file('test_foo.py'), 'foo.py')
+
+    def testTestToSourceWithAlternatePrefix(self):
+        vimvar['g:PyUnitTestPrefix'] = '_'
+        sbs = mod.SideBySideLayout('src', 'tests')
+        self.assertEquals(sbs.get_source_file('src/_foo.py'), 'src/foo.py')
+        self.assertEquals(sbs.get_source_file('src/_bar.py'), 'src/bar.py')
+        self.assertEquals(sbs.get_source_file('src/bar/_baz.py'), 'src/bar/baz.py')
+        self.assertEquals(sbs.get_source_file('_foo.py'), 'foo.py')
+
