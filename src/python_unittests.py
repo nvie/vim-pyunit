@@ -14,12 +14,11 @@ class TestLayout(object):
     # Helper methods, to be used in subclasses
     def break_down(self, path):
         parts = path.split(os.sep)
-        try:
-            parts.remove("__init__.py")
-        except ValueError:
-            pass
-        if len(parts) > 0 and parts[-1].endswith(".py"):
-            parts[-1] = parts[-1][:-len(".py")]
+        if len(parts) > 0:
+            if parts[-1] == '__init__.py':
+                del parts[-1]
+            elif parts[-1].endswith(".py"):
+                parts[-1] = parts[-1][:-len(".py")]
         return parts
 
     def glue_parts(self, parts, use_under_under_init=False):
