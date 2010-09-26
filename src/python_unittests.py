@@ -4,6 +4,13 @@ import os.path
 from vim_bridge import bridged
 
 
+def _strip_prefix(s, prefix):
+    if prefix != "" and s.startswith(prefix):
+        return s[len(prefix):]
+    else:
+        return s
+
+
 class TestLayout(object):
     def __init__(self, source_root=None, test_root=None):
         self.source_root = source_root
@@ -117,13 +124,6 @@ def find_project_root(path):
 def find_source_root(path):
     source_root = vim.eval("g:PyUnitSourceRoot")
     return os.path.join(find_project_root(path), source_root)
-
-
-def _strip_prefix(s, prefix):
-    if prefix != "" and s.startswith(prefix):
-        return s[len(prefix):]
-    else:
-        return s
 
 
 def _strip_suffix(s, suffix, replace_by=''):
