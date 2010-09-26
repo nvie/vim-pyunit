@@ -299,13 +299,6 @@ def find_source_root(path):
     return os.path.join(find_project_root(path), source_root)
 
 
-def _strip_suffix(s, suffix, replace_by=''):
-    if suffix != "" and s.endswith(suffix):
-        return s[:-len(suffix)] + replace_by
-    else:
-        return s
-
-
 def _relpath(path, start='.', try_stdlib=True):
     """Returns the relative version of the path.  This is a backport of
     Python's stdlib routine os.path.relpath(), which is not yet available in
