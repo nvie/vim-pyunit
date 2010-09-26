@@ -4,7 +4,7 @@ import os.path
 from vim_bridge import bridged
 
 
-def _strip_prefix(s, prefix):
+def strip_prefix(s, prefix):
     if prefix != "" and s.startswith(prefix):
         return s[len(prefix):]
     else:
@@ -102,7 +102,7 @@ class FollowHierarchyLayout(BaseTestLayout):
 
         test_file = _relpath(test_file, self.test_root)
         parts = self.break_down(test_file)
-        parts = [_strip_prefix(p, self.prefix) for p in parts]
+        parts = [strip_prefix(p, self.prefix) for p in parts]
         parts = [self.source_root] + parts
         return [self.glue_parts(parts, x) for x in (False, True)]
 
@@ -223,7 +223,7 @@ def find_source_file_for_test_file(path):
 
     rel_path = _relpath(path, testsroot)
     parts = rel_path.split(os.sep)
-    parts = [_strip_prefix(p, PyUnitTestPrefix) for p in parts]
+    parts = [strip_prefix(p, PyUnitTestPrefix) for p in parts]
     sourcefile = os.sep.join(parts)
 
     src_root = find_source_root(path)
