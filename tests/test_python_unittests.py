@@ -42,7 +42,8 @@ class FileAwareTestCase(unittest.TestCase):
     def assertSameFile(self, x, y):
         self.assertEquals(os.path.realpath(x), os.path.realpath(y))
 
-class TestSomething(FileAwareTestCase):
+
+class TestPlugin(FileAwareTestCase):
     def setUp(self):
         setUpVimEnvironment()
 
