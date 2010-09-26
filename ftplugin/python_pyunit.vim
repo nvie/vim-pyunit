@@ -114,12 +114,16 @@ import os.path
 from vim_bridge import bridged
 
 
+# General helper functions
+
 def strip_prefix(s, prefix):
     if prefix != "" and s.startswith(prefix):
         return s[len(prefix):]
     else:
         return s
 
+
+# Classes that implement TestLayouts
 
 class BaseTestLayout(object):
     def __init__(self, source_root=None, test_root=None):
@@ -216,6 +220,8 @@ class FollowHierarchyLayout(BaseTestLayout):
         parts = [self.source_root] + parts
         return [self.glue_parts(parts, x) for x in (False, True)]
 
+
+# The main functions
 
 def is_home_dir(path):
     return os.path.realpath(path) == os.path.expandvars("$HOME")
