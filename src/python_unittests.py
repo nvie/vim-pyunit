@@ -77,6 +77,42 @@ class SideBySideLayout(BaseTestLayout):
         return [self.glue_parts(parts)]
 
 
+class FlatLayout(BaseTestLayout):
+    def is_test_file(self, some_file):
+        if not some_file.startswith(self.test_root):
+            return False
+
+        some_file = _relpath(some_file, self.test_root)
+
+        parts = self.break_down(some_file)
+        if len(parts) != 1:
+            return False
+        return parts[0].startswith(self.prefix)
+
+    def get_test_file(self, source_file):
+        if not source_file.startswith(self.source_root):
+            raise RuntimeError("File %s is not under the source root." % source_file)
+
+        source_file = _relpath(source_file, self.source_root)
+        parts = self.break_down(source_file)
+        flat_file_name = "_".join(parts)
+        parts = [self.test_root] + [self.prefix + flat_file_name]
+        return self.glue_parts(parts)
+
+    def get_source_candidates(self, test_file):
+        if not test_file.startswith(self.test_root):
+            raise RuntimeError("File %s is not under the test root." % test_file)
+
+        test_file = _relpath(test_file, self.test_root)
+        parts = self.break_down(test_file)
+        if len(parts) != 1:
+            raise RuntimeError("Flat tests layout does not allow tests to be more than one directory deep.")
+        file_name = strip_prefix(parts[0], self.prefix)
+        parts = file_name.split("_")
+        parts = [self.source_root] + parts
+        return [self.glue_parts(parts, x) for x in (False, True)]
+
+
 class FollowHierarchyLayout(BaseTestLayout):
     def is_test_file(self, some_file):
         if not some_file.startswith(self.test_root):
