@@ -30,9 +30,9 @@ class TestLayout(object):
 
     def glue_parts(self, parts, use_under_under_init=False):
         if use_under_under_init:
-            parts.append("__init__.py")
+            parts = parts + ['__init__.py']
         else:
-            parts[-1] = parts[-1] + ".py"
+            parts = parts[:-1] + [parts[-1] + '.py']
         return os.sep.join(parts)
 
 
@@ -88,7 +88,7 @@ class FollowHierarchyLayout(TestLayout):
 
     def get_test_file(self, source_file):
         if not source_file.startswith(self.source_root):
-            raise RuntimeError("This file is not under the source root.")
+            raise RuntimeError("File %s is not under the source root." % source_file)
 
         source_file = _relpath(source_file, self.source_root)
         parts = self.break_down(source_file)
@@ -96,7 +96,15 @@ class FollowHierarchyLayout(TestLayout):
         parts = [self.test_root] + parts
         return self.glue_parts(parts)
 
-    #def get_source_candidates(self, test_file):
+    def get_source_candidates(self, test_file):
+        if not test_file.startswith(self.test_root):
+            raise RuntimeError("File %s is not under the test root." % test_file)
+
+        test_file = _relpath(test_file, self.test_root)
+        parts = self.break_down(test_file)
+        parts = [_strip_prefix(p, self.prefix) for p in parts]
+        parts = [self.source_root] + parts
+        return [self.glue_parts(parts, x) for x in (False, True)]
 
 
 def is_home_dir(path):

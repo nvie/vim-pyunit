@@ -317,18 +317,17 @@ class TestFollowHierarcyLayout(FileAwareTestCase):
         self.assertEquals(layout.get_test_file('src/bar.py'), 'tests/_bar.py')
         self.assertEquals(layout.get_test_file('src/bar/baz.py'), 'tests/_bar/_baz.py')
 
-    #def testTestToSource(self):
-        #layout = mod.FollowHierarchyLayout('src', 'tests')
-        #self.assertEquals(layout.get_source_candidates('src/test_foo.py'), ['src/foo.py'])
-        #self.assertEquals(layout.get_source_candidates('src/test_bar.py'), ['src/bar.py'])
-        #self.assertEquals(layout.get_source_candidates('src/bar/test_baz.py'), ['src/bar/baz.py'])
-        #self.assertEquals(layout.get_source_candidates('test_foo.py'), ['foo.py'])
+    def testTestToSource(self):
+        layout = mod.FollowHierarchyLayout('src', 'tests')
+        self.assertEquals(layout.get_source_candidates('tests/test_foo.py'), ['src/foo.py', 'src/foo/__init__.py'])
+        self.assertEquals(layout.get_source_candidates('tests/test_bar.py'), ['src/bar.py', 'src/bar/__init__.py'])
+        self.assertEquals(layout.get_source_candidates('tests/bar/test_baz.py'), ['src/bar/baz.py', 'src/bar/baz/__init__.py'])
+        self.assertRaises(RuntimeError, layout.get_source_candidates, 'test_foo.py')
 
-    #def testTestToSourceWithAlternatePrefix(self):
-        #vimvar['g:PyUnitTestPrefix'] = '_'
-        #layout = mod.FollowHierarchyLayout('src', 'tests')
-        #self.assertEquals(layout.get_source_candidates('src/_foo.py'), ['src/foo.py'])
-        #self.assertEquals(layout.get_source_candidates('src/_bar.py'), ['src/bar.py'])
-        #self.assertEquals(layout.get_source_candidates('src/bar/_baz.py'), ['src/bar/baz.py'])
-        #self.assertEquals(layout.get_source_candidates('_foo.py'), ['foo.py'])
-
+    def testTestToSourceWithAlternatePrefix(self):
+        vimvar['g:PyUnitTestPrefix'] = '_'
+        layout = mod.FollowHierarchyLayout('src', 'tests')
+        self.assertEquals(layout.get_source_candidates('tests/_foo.py'), ['src/foo.py', 'src/foo/__init__.py'])
+        self.assertEquals(layout.get_source_candidates('tests/_bar.py'), ['src/bar.py', 'src/bar/__init__.py'])
+        self.assertEquals(layout.get_source_candidates('tests/bar/_baz.py'), ['src/bar/baz.py', 'src/bar/baz/__init__.py'])
+        self.assertRaises(RuntimeError, layout.get_source_candidates, '_foo.py')
