@@ -11,7 +11,7 @@ def _strip_prefix(s, prefix):
         return s
 
 
-class TestLayout(object):
+class BaseTestLayout(object):
     def __init__(self, source_root=None, test_root=None):
         self.source_root = source_root
         self.test_root = test_root
@@ -36,7 +36,7 @@ class TestLayout(object):
         return os.sep.join(parts)
 
 
-    # The actual TestLayout methods that need implementation
+    # The actual BaseTestLayout methods that need implementation
     def is_test_file(self, some_file):
         raise NotImplemented("Implement this method in a subclass.")
 
@@ -53,7 +53,7 @@ class TestLayout(object):
         raise RuntimeError("Source file not found.")
 
 
-class SideBySideLayout(TestLayout):
+class SideBySideLayout(BaseTestLayout):
     def is_test_file(self, some_file):
         parts = self.break_down(some_file)
         filepart = parts[-1]
@@ -73,7 +73,7 @@ class SideBySideLayout(TestLayout):
         return [self.glue_parts(parts)]
 
 
-class FollowHierarchyLayout(TestLayout):
+class FollowHierarchyLayout(BaseTestLayout):
     def is_test_file(self, some_file):
         if not some_file.startswith(self.test_root):
             return False

@@ -45,25 +45,25 @@ class FileAwareTestCase(unittest.TestCase):
 
 class TestTestLayout(FileAwareTestCase):
     def testBreakDownSimple(self):
-        layout = mod.TestLayout('src', 'tests')
+        layout = mod.BaseTestLayout('src', 'tests')
         self.assertEquals(layout.break_down('foo.py'), ['foo'])
         self.assertEquals(layout.break_down('foo/bar.py'), ['foo', 'bar'])
         self.assertEquals(layout.break_down('foo/bar/baz.py'), ['foo', 'bar', 'baz'])
 
     def testBreakDownWithUnderUnderInits(self):
-        layout = mod.TestLayout('src', 'tests')
+        layout = mod.BaseTestLayout('src', 'tests')
         self.assertEquals(layout.break_down('__init__.py'), [])
         self.assertEquals(layout.break_down('foo/__init__.py'), ['foo'])
         self.assertEquals(layout.break_down('foo/bar/baz/__init__.py'), ['foo', 'bar', 'baz'])
 
     def testGlueSimple(self):
-        layout = mod.TestLayout('src', 'tests')
+        layout = mod.BaseTestLayout('src', 'tests')
         self.assertEquals(layout.glue_parts(['foo']), 'foo.py')
         self.assertEquals(layout.glue_parts(['foo', 'bar', 'baz']), 'foo/bar/baz.py')
         self.assertRaises(IndexError, layout.glue_parts, [])
 
     def testGlueWithUnderUnderInits(self):
-        layout = mod.TestLayout('src', 'tests')
+        layout = mod.BaseTestLayout('src', 'tests')
         self.assertEquals(layout.glue_parts(['foo'], True), 'foo/__init__.py')
         self.assertEquals(layout.glue_parts(['foo', 'bar', 'baz'], True), 'foo/bar/baz/__init__.py')
         self.assertEquals(layout.glue_parts([], True), '__init__.py')
