@@ -16,9 +16,9 @@ def strip_prefix(s, prefix):
 # Classes that implement TestLayouts
 
 class BaseTestLayout(object):
-    def __init__(self, source_root=None, test_root=None):
-        self.source_root = source_root
-        self.test_root = test_root
+    def __init__(self):
+        self.source_root = vim.eval('g:PyUnitSourceRoot')
+        self.test_root = vim.eval('g:PyUnitTestsRoot')
         self.prefix = vim.eval('g:PyUnitTestPrefix')
 
 
@@ -147,6 +147,19 @@ class FollowHierarchyLayout(BaseTestLayout):
         return [self.glue_parts(parts, x) for x in (False, True)]
 
 
+def get_implementing_class():
+    implementations = {
+        'flat': FlatLayout,
+        'follow-hierarchy': FollowHierarchyLayout,
+        'side-by-side': SideBySideLayout,
+    }
+    test_layout = vim.eval('g:PyUnitTestsStructure')
+    try:
+        return implementations[test_layout]
+    except KeyError:
+        raise RuntimeError('No such test layout: %s' % test_layout)
+
+
 # The main functions
 
 def is_home_dir(path):
@@ -236,27 +249,11 @@ def get_tests_root(path):
     return os.sep.join([find_project_root(path), loc])
 
 
-def add_test_prefix_to_all_path_components(path):
-    prefix = vim.eval("g:PyUnitTestPrefix")
-    components = path.split(os.sep)
-    return os.sep.join([s and prefix + s or s for s in components])
-
-
 def get_test_file_for_source_file(path):
-    prefix = vim.eval("g:PyUnitTestPrefix")
-
-    relpath = get_relative_source_path(path)
-    relpath = _strip_suffix(relpath, os.sep + '__init__.py', '.py')
-
-    tests_structure = vim.eval("g:PyUnitTestsStructure")
-    if tests_structure == "flat":
-        u_relpath = relpath.replace("/", "_")
-        components = [get_tests_root(path), prefix + u_relpath]
-    else:
-        relpath = add_test_prefix_to_all_path_components(relpath)
-        components = [get_tests_root(path), relpath]
-
-    return os.sep.join(components)
+    prefix = vim.eval('g:PyUnitTestPrefix')
+    path = get_relative_source_path(path)
+    impl = get_implementing_class()()
+    return impl.get_test_file(path)
 
 
 def find_source_file_for_test_file(path):
@@ -331,6 +328,9 @@ def find_source_file_for_test_file(path):
 
 
 def is_test_file(path):
+    #impl = get_implementing_class()()
+    #return impl.is_test_file(path)
+
     # Being in the test root means you're a test file
     testroot = os.path.abspath(get_tests_root(path))
     path = os.path.abspath(path)
