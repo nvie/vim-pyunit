@@ -344,22 +344,6 @@ class TestPlugin(FileAwareTestCase):
     def test_find_project_root(self):
         self.assertEquals(mod.find_project_root(currfile), proj_root)
 
-    def test_source_root(self):
-        self.assertEquals(mod.find_source_root(currfile),
-                          proj_root + '/')
-        vimvar['g:PyUnitSourceRoot'] = 'src'
-        self.assertEquals(mod.find_source_root(currfile),
-                          os.path.join(proj_root, 'src'))
-
-        vimvar['g:PyUnitSourceRoot'] = 'alt-src'
-        self.assertEquals(mod.find_source_root(currfile),
-                          os.path.join(proj_root, 'alt-src'))
-
-        vimvar['g:PyUnitSourceRoot'] = ''
-        self.assertEquals(mod.find_source_root(currfile),
-                          os.path.join(proj_root, ''))
-
-
     def test_relpath(self):
         # Nice and simple
         self.assertEquals(
@@ -397,10 +381,6 @@ class TestPlugin(FileAwareTestCase):
 
         vimvar['g:PyUnitTestsRoot'] = 'my/test/dir'
         self.assertFalse(mod.is_test_file('tests/test_foo.py'))
-
-    def test_source_root_for_non_source_file(self):
-        self.assertRaises(Exception,
-                mod.find_source_root, '/tmp/foo.py')
 
     def test_get_test_file_for_normal_source_file(self):
         self.assertSameFile(

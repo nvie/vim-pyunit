@@ -241,11 +241,6 @@ def is_fs_root(path):
            (int(vim.eval("g:ProjRootStopAtHomeDir")) and is_home_dir(path))
 
 
-def find_source_root(path):
-    source_root = vim.eval("g:PyUnitSourceRoot")
-    return os.path.join(find_project_root(path), source_root)
-
-
 def get_test_file_for_source_file(path):
     impl = get_implementing_class()()
     return impl.get_test_file(path)
