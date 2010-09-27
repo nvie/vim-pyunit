@@ -112,7 +112,7 @@ class BaseTestLayout(object):
         raise NotImplemented("Implement this method in a subclass.")
 
     def get_source_file(self, test_file):
-        for candidate in self.get_source_file_candidates(test_file):
+        for candidate in self.get_source_candidates(test_file):
             if os.path.exists(candidate):
                 return candidate
         raise RuntimeError("Source file not found.")
@@ -246,95 +246,22 @@ def find_source_root(path):
     return os.path.join(find_project_root(path), source_root)
 
 
-def get_tests_root(path):
-    loc = vim.eval("g:PyUnitTestsRoot")
-    return os.sep.join([find_project_root(path), loc])
-
-
 def get_test_file_for_source_file(path):
     impl = get_implementing_class()()
     return impl.get_test_file(path)
 
 
 def find_source_file_for_test_file(path):
-    testsroot = get_tests_root(path)
-    PyUnitTestPrefix = vim.eval("g:PyUnitTestPrefix")
-
-    rel_path = _relpath(path, testsroot)
-    parts = rel_path.split(os.sep)
-    parts = [strip_prefix(p, PyUnitTestPrefix) for p in parts]
-    sourcefile = os.sep.join(parts)
-
-    src_root = find_source_root(path)
-    tests_structure = vim.eval("g:PyUnitTestsStructure")
-    if tests_structure == "flat":
-        # A flat test structure makes it somewhat ambiguous to deduce the test
-        # file for the given testfile.  For example, a test file called
-        # test_foo_bar.py could belong to these four files:
-        #
-        # - foo/bar.py
-        # - foo/bar/__init__.py
-        # - foo_bar.py
-        # - foo_bar/__init__.py
-        #
-        # The solution is to try them all and if we find a match, we use that
-        # file.  In case of multiple matches, we simply use the first.
-
-        def slashgenerator(length, select_from, select_last_from):
-            if length <= 0:
-                for opt in select_last_from:
-                    yield [opt]
-            else:
-                for opt in select_from:
-                    for x in slashgenerator(length - 1, select_from, \
-                                     select_last_from):
-                        yield [opt] + x
-
-        def interlace(x, y):
-            max_ = max(len(x), len(y))
-            for i in xrange(max_):
-                if i < len(x):
-                    yield x[i]
-                if i < len(y):
-                    yield y[i]
-
-        stripped, extension = os.path.splitext(sourcefile)
-        sourcefile = None
-        parts = stripped.split("_")
-
-        intermediate_pairs = ['/', '_']
-        last_pair = [extension, '/__init__' + extension]
-        for slashes in slashgenerator(len(parts) - 1, intermediate_pairs, \
-                               last_pair):
-            guess = os.path.join(src_root, "".join(interlace(parts, slashes)))
-            if os.path.isfile(guess):
-                sourcefile = guess
-                break
-
-        if not sourcefile:
-            raise Exception("Source file not found.")
-    else:
-        # For non-flat tests structures, the source file can either be the
-        # source file as is (most likely), or an __init__.py file.  Try that
-        # alternative if the regular sourcefile doesn't exist.
-        sourcefile = os.path.join(src_root, sourcefile)
-        if not os.path.isfile(sourcefile):
-            filepath, extension = os.path.splitext(sourcefile)
-            sourcefile = "".join([filepath, os.sep, "__init__", extension])
-            if not os.path.isfile(sourcefile):
-                raise Exception("Source file not found.")
-
-    return sourcefile
+    impl = get_implementing_class()()
+    for f in impl.get_source_candidates(path):
+        if os.path.exists(f):
+            return f
+    raise Exception("Source file not found.")
 
 
 def is_test_file(path):
-    #impl = get_implementing_class()()
-    #return impl.is_test_file(path)
-
-    # Being in the test root means you're a test file
-    testroot = os.path.abspath(get_tests_root(path))
-    path = os.path.abspath(path)
-    return path.startswith(testroot)
+    impl = get_implementing_class()()
+    return impl.is_test_file(path)
 
 
 def _vim_split_cmd(inverted=False):

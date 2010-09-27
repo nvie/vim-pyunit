@@ -393,10 +393,10 @@ class TestPlugin(FileAwareTestCase):
 
 
     def test_is_test_file(self):
-        self.assertTrue(mod.is_test_file('tests/foo.py'))
+        self.assertTrue(mod.is_test_file('tests/test_foo.py'))
 
         vimvar['g:PyUnitTestsRoot'] = 'my/test/dir'
-        self.assertFalse(mod.is_test_file('tests/foo.py'))
+        self.assertFalse(mod.is_test_file('tests/test_foo.py'))
 
     def test_source_root_for_non_source_file(self):
         self.assertRaises(Exception,
