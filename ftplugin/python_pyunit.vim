@@ -116,11 +116,64 @@ from vim_bridge import bridged
 
 # General helper functions
 
+def _relpath(path, start='.', try_stdlib=True):
+    """Returns the relative version of the path.  This is a backport of
+    Python's stdlib routine os.path.relpath(), which is not yet available in
+    Python 2.4.
+
+    """
+    # Fall back onto stdlib version of it, if available
+    if try_stdlib:
+        try:
+            return os.path.relpath(path, start)
+        except AttributeError:
+            # Python versions below 2.6 don't have the relpath function
+            # It's ok, we fall back onto our own implementation
+            pass
+
+    fullp = os.path.abspath(path)
+    fulls = os.path.abspath(start)
+    matchs = os.path.normpath(start)
+    if not matchs.endswith(os.sep):
+        matchs += os.sep
+
+    if fullp == fulls:
+        return '.'
+    elif fullp.startswith(matchs):
+        return fullp[len(matchs):]
+    else:
+        # Strip dirs off of fulls until it is a prefix of fullp
+        path_prefixes = []
+        while True:
+            path_prefixes.append(os.path.pardir)
+            fulls = os.path.dirname(fulls)
+            if fullp.startswith(fulls):
+                break
+        remainder = fullp[len(fulls):]
+        if remainder.startswith(os.sep):
+            remainder = remainder[len(os.sep):]
+        path_prefix = os.sep.join(path_prefixes)
+        return os.path.join(path_prefix, remainder)
+
+
 def strip_prefix(s, prefix):
     if prefix != "" and s.startswith(prefix):
         return s[len(prefix):]
     else:
         return s
+
+
+def find_project_root(path='.'):
+    if not os.path.isdir(path):
+        return find_project_root(os.path.dirname(os.path.realpath(path)))
+
+    indicators = vim.eval("g:ProjRootIndicators")
+    while not is_fs_root(path):
+        for i in indicators:
+            if os.path.exists(os.path.join(path, i)):
+                return os.path.realpath(path)
+        path = os.path.join(path, os.path.pardir)
+    raise Exception("Could not find project root")
 
 
 # Classes that implement TestLayouts
@@ -281,62 +334,9 @@ def is_fs_root(path):
            (int(vim.eval("g:ProjRootStopAtHomeDir")) and is_home_dir(path))
 
 
-def find_project_root(path):
-    if not os.path.isdir(path):
-        return find_project_root(os.path.dirname(os.path.realpath(path)))
-
-    indicators = vim.eval("g:ProjRootIndicators")
-    while not is_fs_root(path):
-        for i in indicators:
-            if os.path.exists(os.path.join(path, i)):
-                return os.path.normpath(path)
-        path = os.path.join(path, os.path.pardir)
-    raise Exception("Could not find project root")
-
-
 def find_source_root(path):
     source_root = vim.eval("g:PyUnitSourceRoot")
     return os.path.join(find_project_root(path), source_root)
-
-
-def _relpath(path, start='.', try_stdlib=True):
-    """Returns the relative version of the path.  This is a backport of
-    Python's stdlib routine os.path.relpath(), which is not yet available in
-    Python 2.4.
-
-    """
-    # Fall back onto stdlib version of it, if available
-    if try_stdlib:
-        try:
-            return os.path.relpath(path, start)
-        except AttributeError:
-            # Python versions below 2.6 don't have the relpath function
-            # It's ok, we fall back onto our own implementation
-            pass
-
-    fullp = os.path.abspath(path)
-    fulls = os.path.abspath(start)
-    matchs = os.path.normpath(start)
-    if not matchs.endswith(os.sep):
-        matchs += os.sep
-
-    if fullp == fulls:
-        return '.'
-    elif fullp.startswith(matchs):
-        return fullp[len(matchs):]
-    else:
-        # Strip dirs off of fulls until it is a prefix of fullp
-        path_prefixes = []
-        while True:
-            path_prefixes.append(os.path.pardir)
-            fulls = os.path.dirname(fulls)
-            if fullp.startswith(fulls):
-                break
-        remainder = fullp[len(fulls):]
-        if remainder.startswith(os.sep):
-            remainder = remainder[len(os.sep):]
-        path_prefix = os.sep.join(path_prefixes)
-        return os.path.join(path_prefix, remainder)
 
 
 def get_relative_source_path(path, allow_outside_root=False):
