@@ -1,13 +1,18 @@
 #!/usr/bin/env python
 import os
 
+source_dir = 'src'
+output_dir = 'ftplugin'
+
+
 def build():
-    py_src = file('src/python_unittests.py').read()
-    vim_src = file('src/base.vim').read()
+    py_src = file(os.path.join(source_dir, 'python_unittests.py')).read()
+    vim_src = file(os.path.join(source_dir, 'base.vim')).read()
     combined_src = vim_src.replace('__PYTHON_SOURCE__', py_src)
-    if not os.path.exists('ftplugin'):
-        os.mkdir('ftplugin')
-    file('ftplugin/python_pyunit.vim', 'w').write(combined_src)
+    if not os.path.exists(output_dir):
+        os.mkdir(output_dir)
+    output_path = os.path.join(output_dir, 'python_pyunit.vim')
+    file(output_path, 'w').write(combined_src)
 
 if __name__ == '__main__':
     build()

@@ -29,8 +29,6 @@ if !exists("g:PyUnitShowTests")       " TODO: Use this one!
     let PyUnitShowTests = 1
 endif
 
-let &grepformat = "%f:%l: fail: %m,%f:%l: error: %m"
-let &grepprg = g:PyUnitCmd
 "}}}
 " Configuration for autodetecting project root {{{
 " Configure what files indicate a project root
@@ -139,7 +137,11 @@ fun! PyUnitRunNose(path) " {{{
 
     " perform the grep itself
     let &grepformat = "%f:%l: fail: %m,%f:%l: error: %m"
-    let &grepprg = g:PyUnitCmd
+    if g:PyUnitSourceRoot != ""
+        let &grepprg = "PYTHONPATH=".g:PyUnitSourceRoot." ".g:PyUnitCmd
+    else
+        let &grepprg = g:PyUnitCmd
+    endif
     execute "silent! grep! ".a:path
 
     " restore grep settings
@@ -216,16 +218,16 @@ endf " }}}
 " remapped it already (or a mapping exists already for <F8>)
 if !exists("no_plugin_maps") && !exists("no_pyunit_maps")
     if !hasmapto('PyUnitRunTests(')
-        noremap <F8> :call PyUnitRunTests()<CR>
-        noremap! <F8> <Esc>:call PyUnitRunTests()<CR>
+        noremap <silent> <F8> :call PyUnitRunTests()<CR>
+        noremap! <silent> <F8> <Esc>:call PyUnitRunTests()<CR>
     endif
     if !hasmapto('PyUnitRunAllTests(')
-        noremap <S-F8> :call PyUnitRunAllTests()<CR>
-        noremap! <S-F8> <Esc>:call PyUnitRunAllTests()<CR>
+        noremap <silent> <S-F8> :call PyUnitRunAllTests()<CR>
+        noremap! <silent> <S-F8> <Esc>:call PyUnitRunAllTests()<CR>
     endif
     if !hasmapto('PyUnitSwitchToCounterpart(')
-        noremap <F9> :call PyUnitSwitchToCounterpart()<CR>
-        noremap! <F9> <Esc>:call PyUnitSwitchToCounterpart()<CR>
+        noremap <silent> <F9> :call PyUnitSwitchToCounterpart()<CR>
+        noremap! <silent> <F9> <Esc>:call PyUnitSwitchToCounterpart()<CR>
     endif
 endif
 
