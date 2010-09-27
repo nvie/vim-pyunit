@@ -108,6 +108,19 @@ class TestSideBySideLayout(FileAwareTestCase):
         self.assertFalse(layout.is_test_file('src/foo.py'))
         self.assertFalse(layout.is_test_file('src/foo/bar.py'))
 
+    def testDetectAbsoluteTestFile(self):
+        vimvar['g:PyUnitTestPrefix'] = '_'
+        vimvar['g:PyUnitSourceRoot'] = 'src'
+        absdir = os.path.realpath(proj_root)
+        layout = mod.SideBySideLayout()
+        self.assertTrue(layout.is_test_file('%s/_foo.py' % absdir))
+        self.assertTrue(layout.is_test_file('%s/foo/_bar.py' % absdir))
+        self.assertTrue(layout.is_test_file('%s/tests/foo/_bar.py' % absdir))
+        self.assertTrue(layout.is_test_file('%s/test_foo/_bar.py' % absdir))
+        self.assertFalse(layout.is_test_file('%s/foo.py' % absdir))
+        self.assertFalse(layout.is_test_file('%s/src/foo.py' % absdir))
+        self.assertFalse(layout.is_test_file('%s/src/foo/bar.py' % absdir))
+
     def testSourceToTest(self):
         vimvar['g:PyUnitSourceRoot'] = 'src'
         layout = mod.SideBySideLayout()
@@ -174,6 +187,21 @@ class TestFlatLayout(FileAwareTestCase):
         self.assertFalse(layout.is_test_file('tests/foo/_bar.py'))
         self.assertFalse(layout.is_test_file('src/foo.py'))
         self.assertFalse(layout.is_test_file('src/foo/bar.py'))
+
+    def testDetectAbsoluteTestFile(self):
+        vimvar['g:PyUnitTestPrefix'] = '_'
+        vimvar['g:PyUnitSourceRoot'] = 'src'
+        vimvar['g:PyUnitTestsRoots'] = 'tests'
+        absdir = os.path.realpath(proj_root)
+        layout = mod.FlatLayout()
+        self.assertTrue(layout.is_test_file('%s/tests/_foo.py' % absdir))
+        self.assertTrue(layout.is_test_file('%s/tests/_foo_bar.py' % absdir))
+        self.assertFalse(layout.is_test_file('%s/tests/_foo/_bar.py' % absdir))
+        self.assertFalse(layout.is_test_file('%s/foo.py' % absdir))
+        self.assertFalse(layout.is_test_file('%s/_foo/_bar.py' % absdir))
+        self.assertFalse(layout.is_test_file('%s/tests/foo/_bar.py' % absdir))
+        self.assertFalse(layout.is_test_file('%s/src/foo.py' % absdir))
+        self.assertFalse(layout.is_test_file('%s/src/foo/bar.py' % absdir))
 
     def testSourceToTestFailsForNonSourceFiles(self):
         vimvar['g:PyUnitSourceRoot'] = 'src'
@@ -243,6 +271,19 @@ class TestFollowHierarcyLayout(FileAwareTestCase):
         self.assertFalse(layout.is_test_file('tests/foo/_bar.py'))
         self.assertFalse(layout.is_test_file('src/foo.py'))
         self.assertFalse(layout.is_test_file('src/foo/bar.py'))
+
+    def testDetectAbsoluteTestFile(self):
+        vimvar['g:PyUnitSourceRoot'] = 'src'
+        vimvar['g:PyUnitTestsRoots'] = 'tests'
+        absdir = os.path.realpath(proj_root)
+        layout = mod.FollowHierarchyLayout()
+        self.assertTrue(layout.is_test_file('%s/tests/test_foo.py' % absdir))
+        self.assertTrue(layout.is_test_file('%s/tests/test_foo/test_bar.py' % absdir))
+        self.assertFalse(layout.is_test_file('%s/foo.py' % absdir))
+        self.assertFalse(layout.is_test_file('%s/test_foo/test_bar.py' % absdir))
+        self.assertFalse(layout.is_test_file('%s/tests/foo/test_bar.py' % absdir))
+        self.assertFalse(layout.is_test_file('%s/src/foo.py' % absdir))
+        self.assertFalse(layout.is_test_file('%s/src/foo/bar.py' % absdir))
 
     def testSourceToTestFailsForNonSourceFiles(self):
         vimvar['g:PyUnitSourceRoot'] = 'src'

@@ -120,16 +120,19 @@ class BaseTestLayout(object):
 
 class SideBySideLayout(BaseTestLayout):
     def is_test_file(self, some_file):
+        some_file = self.relatize(some_file)
         parts = self.break_down(some_file)
         filepart = parts[-1]
         return filepart.startswith(self.prefix)
 
     def get_test_file(self, source_file):
+        source_file = self.relatize(source_file)
         parts = self.break_down(source_file)
         parts[-1] = self.prefix + parts[-1]
         return self.glue_parts(parts)
 
     def get_source_candidates(self, test_file):
+        test_file = self.relatize(test_file)
         parts = self.break_down(test_file)
         filepart = parts[-1]
         if not filepart.startswith(self.prefix):
@@ -140,6 +143,7 @@ class SideBySideLayout(BaseTestLayout):
 
 class FlatLayout(BaseTestLayout):
     def is_test_file(self, some_file):
+        some_file = self.relatize(some_file)
         if not some_file.startswith(self.test_root):
             return False
 
@@ -151,6 +155,7 @@ class FlatLayout(BaseTestLayout):
         return parts[0].startswith(self.prefix)
 
     def get_test_file(self, source_file):
+        source_file = self.relatize(source_file)
         if not source_file.startswith(self.source_root):
             raise RuntimeError("File %s is not under the source root." % source_file)
 
@@ -161,6 +166,7 @@ class FlatLayout(BaseTestLayout):
         return self.glue_parts(parts)
 
     def get_source_candidates(self, test_file):
+        test_file = self.relatize(test_file)
         if not test_file.startswith(self.test_root):
             raise RuntimeError("File %s is not under the test root." % test_file)
 
@@ -176,6 +182,7 @@ class FlatLayout(BaseTestLayout):
 
 class FollowHierarchyLayout(BaseTestLayout):
     def is_test_file(self, some_file):
+        some_file = self.relatize(some_file)
         if not some_file.startswith(self.test_root):
             return False
 
@@ -188,6 +195,7 @@ class FollowHierarchyLayout(BaseTestLayout):
         return True
 
     def get_test_file(self, source_file):
+        source_file = self.relatize(source_file)
         if not source_file.startswith(self.source_root):
             raise RuntimeError("File %s is not under the source root." % source_file)
 
@@ -198,6 +206,7 @@ class FollowHierarchyLayout(BaseTestLayout):
         return self.glue_parts(parts)
 
     def get_source_candidates(self, test_file):
+        test_file = self.relatize(test_file)
         if not test_file.startswith(self.test_root):
             raise RuntimeError("File %s is not under the test root." % test_file)
 
