@@ -20,6 +20,8 @@ import python_unittests as mod
 
 
 # Calculate the *real* project root for this test scenario
+# I should probably mock this out, but for the current state of affairs, this is
+# too much overkill
 proj_root = os.getcwd()
 currfile = __file__.replace('.pyc', '.py')
 
@@ -77,6 +79,7 @@ class TestTestLayout(FileAwareTestCase):
         layout = mod.BaseTestLayout()
         self.assertEquals(layout.absolutify("foo/bar.py"), "%s/foo/bar.py" % proj_root)
         self.assertEquals(layout.absolutify("/tmp/foo/bar.py"), "/tmp/foo/bar.py")
+
 
 class TestSideBySideLayout(FileAwareTestCase):
     def setUp(self):
