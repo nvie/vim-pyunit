@@ -81,8 +81,8 @@ mappings:
 +----------+------------------------------------------------------------+
 
 The plugin autodetects whether you have remapped the functions to custom
-keyboard mappings.  If so, if does not register the default mappings.  So to
-pick your own shortcut key mappings, simply add lines like this to your
+keyboard mappings.  If so, if does not register the default mappings.  So
+to pick your own shortcut key mappings, simply add lines like this to your
 ``.vimrc``::
 
     noremap ,t :call PyUnitRunTests()<CR>
@@ -112,16 +112,16 @@ The plugin supports setting of the following variables:
 | ``ProjRootStopAtHomeDir``     | Stop the search for the project root at the    | 0 or 1                    | 1                                 |
 |                               | user's home dir.                               |                           |                                   |
 +-------------------------------+------------------------------------------------+---------------------------+-----------------------------------+
-| ``PyUnitTestPrefix``          | The filename prefix to use for test files.     | any string                | "test_"                           |
+| ``PyUnitTestPrefix``          | The filename prefix to use for test files.     | any string                | "test\_"                          |
 +-------------------------------+------------------------------------------------+---------------------------+-----------------------------------+
 | ``PyUnitTestSuffix``          | *Not implemented yet*                          | 0 or 1                    | n/a                               |
 +-------------------------------+------------------------------------------------+---------------------------+-----------------------------------+
 | ``PyUnitSourceRoot``          | The relative location where all source files   | directory spec, or empty  | ""                                |
 |                               | live.                                          |                           |                                   |
 +-------------------------------+------------------------------------------------+---------------------------+-----------------------------------+
-| ``PyUnitTestsRoot``            | The relative location where all tests live.    | directory spec            | "tests"                           |
+| ``PyUnitTestsRoot``           | The relative location where all tests live.    | directory spec            | "tests"                           |
 +-------------------------------+------------------------------------------------+---------------------------+-----------------------------------+
-| ``PyUnitTestsStructure``       | Specifies how you wish to organise your tests. | flat, follow-hierarchy,   | "follow-hierarchy"                |
+| ``PyUnitTestsStructure``      | Specifies how you wish to organise your tests. | flat, follow-hierarchy,   | "follow-hierarchy"                |
 |                               |                                                | side-by-side              |                                   |
 +-------------------------------+------------------------------------------------+---------------------------+-----------------------------------+
 | ``PyUnitTestsSplitWindow``    | Specifies where test files should be opened,   | left, right, top, bottom, | "right"                           |
