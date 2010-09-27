@@ -347,9 +347,9 @@ def find_source_root(path):
     return os.path.join(find_project_root(path), source_root)
 
 
-def get_relative_source_path(path, allow_outside_root=False):
+def get_relative_source_path(path):
     root = find_source_root(path)
-    if allow_outside_root or os.path.realpath(path).startswith(root):
+    if os.path.realpath(path).startswith(root):
         return _relpath(path, root)
     else:
         raise Exception('Path %s is not in the source root.' % path)
@@ -361,7 +361,6 @@ def get_tests_root(path):
 
 
 def get_test_file_for_source_file(path):
-    prefix = vim.eval('g:PyUnitTestPrefix')
     path = get_relative_source_path(path)
     impl = get_implementing_class()()
     return impl.get_test_file(path)
