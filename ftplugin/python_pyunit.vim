@@ -114,7 +114,9 @@ import os.path
 from vim_bridge import bridged
 
 
+#
 # General helper functions
+#
 
 def _relpath(path, start='.', try_stdlib=True):
     """Returns the relative version of the path.  This is a backport of
@@ -163,6 +165,15 @@ def strip_prefix(s, prefix):
         return s
 
 
+def is_home_dir(path):
+    return os.path.realpath(path) == os.path.expandvars("$HOME")
+
+
+def is_fs_root(path):
+    return os.path.realpath(path) == "/" or \
+           (int(vim.eval("g:ProjRootStopAtHomeDir")) and is_home_dir(path))
+
+
 def find_project_root(path='.'):
     if not os.path.isdir(path):
         return find_project_root(os.path.dirname(os.path.realpath(path)))
@@ -176,7 +187,9 @@ def find_project_root(path='.'):
     raise Exception("Could not find project root")
 
 
+#
 # Classes that implement TestLayouts
+#
 
 class BaseTestLayout(object):
     def __init__(self):
@@ -340,16 +353,9 @@ def get_implementing_class():
         raise RuntimeError('No such test layout: %s' % test_layout)
 
 
+#
 # The main functions
-
-def is_home_dir(path):
-    return os.path.realpath(path) == os.path.expandvars("$HOME")
-
-
-def is_fs_root(path):
-    return os.path.realpath(path) == "/" or \
-           (int(vim.eval("g:ProjRootStopAtHomeDir")) and is_home_dir(path))
-
+#
 
 def get_test_file_for_source_file(path):
     impl = get_implementing_class()()
