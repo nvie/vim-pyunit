@@ -202,6 +202,14 @@ class BaseTestLayout(object):
             parts = parts[:-1] + [parts[-1] + '.py']
         return os.sep.join(parts)
 
+    def relatize(self, path):
+        return _relpath(path, find_project_root())
+
+    def absolutify(self, path):
+        if os.path.isabs(path):
+            return path
+        return os.sep.join([find_project_root(), path])
+
 
     # The actual BaseTestLayout methods that need implementation
     def is_test_file(self, some_file):

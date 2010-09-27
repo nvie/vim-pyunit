@@ -68,6 +68,15 @@ class TestTestLayout(FileAwareTestCase):
         self.assertEquals(layout.glue_parts(['foo', 'bar', 'baz'], True), 'foo/bar/baz/__init__.py')
         self.assertEquals(layout.glue_parts([], True), '__init__.py')
 
+    def testRelatize(self):
+        layout = mod.BaseTestLayout()
+        self.assertEquals(layout.relatize("%s/foo/bar.py" % proj_root), "foo/bar.py")
+        self.assertEquals(layout.relatize("foo/bar.py"), "foo/bar.py")
+
+    def testAbsolutify(self):
+        layout = mod.BaseTestLayout()
+        self.assertEquals(layout.absolutify("foo/bar.py"), "%s/foo/bar.py" % proj_root)
+        self.assertEquals(layout.absolutify("/tmp/foo/bar.py"), "/tmp/foo/bar.py")
 
 class TestSideBySideLayout(FileAwareTestCase):
     def setUp(self):
