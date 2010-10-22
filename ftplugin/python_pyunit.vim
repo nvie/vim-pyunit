@@ -336,8 +336,10 @@ class FollowHierarchyLayout(BaseTestLayout):
         test_file = _relpath(test_file, self.test_root)
         parts = self.break_down(test_file)
         parts = [strip_prefix(p, self.prefix) for p in parts]
-        parts = [self.source_root] + parts
-        return [self.glue_parts(parts, x) for x in (False, True)]
+        if self.source_root:
+            parts = [self.source_root] + parts
+        result = [self.glue_parts(parts, x) for x in (False, True)]
+        return result
 
 
 def get_implementing_class():

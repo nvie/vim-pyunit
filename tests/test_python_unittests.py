@@ -308,6 +308,14 @@ class TestFollowHierarcyLayout(FileAwareTestCase):
         self.assertEquals(layout.get_test_file('src/bar/baz.py'), 'tests/_bar/_baz.py')
 
     def testTestToSource(self):
+        vimvar['g:PyUnitSourceRoot'] = ''
+        layout = mod.FollowHierarchyLayout()
+        self.assertEquals(layout.get_source_candidates('tests/test_foo.py'), ['foo.py', 'foo/__init__.py'])
+        self.assertEquals(layout.get_source_candidates('tests/test_bar.py'), ['bar.py', 'bar/__init__.py'])
+        self.assertEquals(layout.get_source_candidates('tests/bar/test_baz.py'), ['bar/baz.py', 'bar/baz/__init__.py'])
+        self.assertRaises(RuntimeError, layout.get_source_candidates, 'test_foo.py')
+
+    def testTestToCustomSource(self):
         vimvar['g:PyUnitSourceRoot'] = 'src'
         layout = mod.FollowHierarchyLayout()
         self.assertEquals(layout.get_source_candidates('tests/test_foo.py'), ['src/foo.py', 'src/foo/__init__.py'])
