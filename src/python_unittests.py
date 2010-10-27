@@ -232,11 +232,48 @@ class FollowHierarchyLayout(BaseTestLayout):
         return result
 
 
+class NoseLayout(BaseTestLayout):
+    def is_test_file(self, some_file):
+        some_file = self.relatize(some_file)
+        if not some_file.startswith(self.test_root):
+            return False
+
+        some_file = _relpath(some_file, self.test_root)
+
+        parts = self.break_down(some_file)
+        return parts[-1].startswith(self.prefix)
+
+    def get_test_file(self, source_file):
+        source_file = self.relatize(source_file)
+        if not source_file.startswith(self.source_root):
+            raise RuntimeError("File %s is not under the source root." % source_file)
+
+        source_file = _relpath(source_file, self.source_root)
+        parts = self.break_down(source_file)
+        parts[-1] = self.prefix + parts[-1]
+        parts = [self.test_root] + parts
+        return self.glue_parts(parts)
+
+    def get_source_candidates(self, test_file):
+        test_file = self.relatize(test_file)
+        if not test_file.startswith(self.test_root):
+            raise RuntimeError("File %s is not under the test root." % test_file)
+
+        test_file = _relpath(test_file, self.test_root)
+        parts = self.break_down(test_file)
+        parts = [strip_prefix(p, self.prefix) for p in parts]
+        if self.source_root:
+            parts = [self.source_root] + parts
+        result = [self.glue_parts(parts, x) for x in (False, True)]
+        return result
+
+
 def get_implementing_class():
     implementations = {
         'flat': FlatLayout,
         'follow-hierarchy': FollowHierarchyLayout,
         'side-by-side': SideBySideLayout,
+        'nose': NoseLayout,
     }
     test_layout = vim.eval('g:PyUnitTestsStructure')
     try:

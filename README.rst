@@ -55,6 +55,13 @@ There are three options:
   directory hierarchy as used in the source directory.
   For example, the test file for the source file ``foo/bar.py`` is called
   ``tests/test_foo/test_bar.py``.
+* **nose**: Put all the test files in a separate test
+  directory (specified by ``PyUnitTestsRoot``), but keep the same
+  directory hierarchy as used in the source directory.  As opposed to the
+  ``follow-hierarchy`` layout, the intermediate directories are not
+  prefixed with ``test_``, only the last (file part) component is.
+  For example, the test file for the source file ``foo/bar.py`` is called
+  ``tests/foo/test_bar.py``.
 
 
 Keyboard mappings
