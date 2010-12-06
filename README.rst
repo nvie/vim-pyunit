@@ -1,3 +1,6 @@
+vim-pyunit ![Project status](http://stillmaintained.com/nvie/vim-pyunit.png)
+==========
+
 Installation
 ------------
 1. Install the following packages from PyPI:
