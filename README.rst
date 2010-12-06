@@ -1,5 +1,7 @@
-vim-pyunit ![Project status](http://stillmaintained.com/nvie/vim-pyunit.png)
+vim-pyunit
 ==========
+
+.. image:: http://stillmaintained.com/nvie/gitflow.png
 
 Installation
 ------------
