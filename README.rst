@@ -1,7 +1,7 @@
 vim-pyunit
 ==========
 
-.. image:: http://stillmaintained.com/nvie/gitflow.png
+.. image:: http://stillmaintained.com/nvie/vim-pyunit.png
 
 Installation
 ------------
