@@ -13,6 +13,10 @@ Installation
    - vim_bridge_:  This is required for the vim plugin scripts, to call
      directly into Python functions.
 
+   To run the unit tests for this project, you also need ``mock``:
+
+   - mock_:  Required to mock out the ``vim`` object in our test cases.
+
 2. Clone the git repository::
 
        git clone git://github.com/nvie/vim-pyunit.git
@@ -24,6 +28,7 @@ Installation
 .. _nose: http://pypi.python.org/pypi/nose
 .. _nose_machineout: http://pypi.python.org/pypi/nose_machineout
 .. _vim_bridge: http://pypi.python.org/pypi/vim_bridge
+.. _mock: http://pypi.python.org/pypi/mock
 
 
 Usage
