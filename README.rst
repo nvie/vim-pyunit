@@ -1,8 +1,6 @@
 vim-pyunit
 ==========
 
-.. image:: http://stillmaintained.com/nvie/vim-pyunit.png
-
 Installation
 ------------
 1. Install the following packages from PyPI:
@@ -152,10 +150,8 @@ The plugin supports setting of the following variables:
 
 Tips
 ----
-This plugin goes well together with the following plugins:
+This plugin goes well together with the following plugin:
 
-- PEP8_ (Python coding style checker under ``<F6>``)
-- PyFlakes_ (Python static syntax checker under ``<F7>``)
+- flake8_ (Python static syntax checker under ``<F7>``)
 
-.. _PEP8: http://github.com/nvie/vim-pep8
-.. _PyFlakes: http://github.com/nvie/vim-pyflakes
+.. _flake8: http://github.com/nvie/vim-flake8
